@@ -1,0 +1,16 @@
+output = "../internal/models"
+wipe = "true"
+no-hooks = "true"
+no-auto-timestamps = "true"
+no-rows-affected = "true"
+no-tests = "true"
+add-enum-types = true
+
+[psql]
+dbname = "webauthn"
+host   = "host.docker.internal"
+port   = 5432
+user   = "postgres"
+pass   = "password"
+sslmode = "disable"
+blacklist = ["goose_db_version"]
