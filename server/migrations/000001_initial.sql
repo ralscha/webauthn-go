@@ -1,17 +1,17 @@
 -- +goose Up
 CREATE TABLE app_user
 (
-    id                 BIGSERIAL PRIMARY KEY,
-    username           VARCHAR(255) UNIQUE NOT NULL,
-    registration_start TIMESTAMPTZ         NULL
+    id            BIGSERIAL PRIMARY KEY,
+    username      VARCHAR(255) UNIQUE NOT NULL,
+    sign_up_start TIMESTAMPTZ         NULL
 );
 
-CREATE TABLE credentials
+CREATE TABLE app_credentials
 (
-    id              BIGSERIAL PRIMARY KEY,
-    app_user_id     BIGINT NOT NULL,
-    count           BIGINT NOT NULL,
-    public_key_cose BYTEA  NOT NULL,
+    id          BYTEA  NOT NULL,
+    app_user_id BIGINT NOT NULL,
+    credential  BYTEA  NOT NULL,
+    PRIMARY KEY (id, app_user_id),
     FOREIGN KEY (app_user_id) REFERENCES app_user (id) ON DELETE CASCADE
 );
 
@@ -27,5 +27,5 @@ CREATE INDEX sessions_expiry_idx ON sessions (expiry);
 
 -- +goose Down
 DROP TABLE sessions;
-DROP TABLE credentials;
+DROP TABLE app_credentials;
 DROP TABLE app_user;

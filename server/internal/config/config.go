@@ -33,6 +33,11 @@ type Config struct {
 		WriteTimeoutInSeconds int64
 		IdleTimeoutInSeconds  int64
 	}
+	WebAuthn struct {
+		RPID          string
+		RPDisplayName string
+		RPOrigins     string
+	}
 }
 
 func applyDefaults() {

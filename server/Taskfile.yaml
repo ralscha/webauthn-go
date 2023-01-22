@@ -81,6 +81,6 @@ tasks:
     cmds:
       - docker build -t sqlboilercodegen -f sqlboiler/Dockerfile .
       - docker run -v {{toSlash .CURRENT_DIR}}:/src sqlboilercodegen
-
+      - go run webauthn.rasc.ch/cmd/tsgen
 
 

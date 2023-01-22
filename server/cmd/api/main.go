@@ -3,8 +3,10 @@ package main
 import (
 	"context"
 	"database/sql"
+	"encoding/gob"
 	"github.com/alexedwards/scs/postgresstore"
 	"github.com/alexedwards/scs/v2"
+	"github.com/go-webauthn/webauthn/webauthn"
 	"github.com/procyon-projects/chrono"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"golang.org/x/exp/slog"
@@ -16,7 +18,6 @@ import (
 	"time"
 	"webauthn.rasc.ch/internal/config"
 	"webauthn.rasc.ch/internal/database"
-	"webauthn.rasc.ch/internal/version"
 )
 
 type application struct {
@@ -25,10 +26,13 @@ type application struct {
 	sessionManager *scs.SessionManager
 	wg             sync.WaitGroup
 	taskScheduler  chrono.TaskScheduler
+	webAuthn       *webauthn.WebAuthn
 }
 
 func main() {
 	rand.Seed(time.Now().UnixNano())
+	gob.Register(webauthn.SessionData{})
+	gob.Register(webauthn.Credential{})
 
 	cfg, err := config.LoadConfig()
 	if err != nil {
@@ -49,14 +53,14 @@ func main() {
 
 	db, err := database.New(cfg)
 	if err != nil {
-		logger.Error("opening database connection failed", err)
+		slog.Error("opening database connection failed", err)
 		os.Exit(1)
 	}
 	defer func(db *sql.DB) {
 		_ = db.Close()
 	}(db)
 
-	logger.Info("database connection pool established")
+	slog.Info("database connection pool established")
 
 	sm := scs.New()
 	sm.Store = postgresstore.NewWithCleanupInterval(db, 30*time.Minute)
@@ -66,11 +70,15 @@ func main() {
 		sm.Cookie.Domain = cfg.CookieDomain
 	}
 	sm.Cookie.Secure = cfg.SecureCookie
-	logger.Info("secure cookie", "secure", sm.Cookie.Secure)
+	slog.Info("secure cookie", "secure", sm.Cookie.Secure)
 
-	err = initAuth(cfg)
+	wa, err := webauthn.New(&webauthn.Config{
+		RPDisplayName: cfg.WebAuthn.RPDisplayName,
+		RPID:          cfg.WebAuthn.RPID,
+		RPOrigins:     []string{cfg.WebAuthn.RPOrigins},
+	})
 	if err != nil {
-		logger.Error("init auth failed", err)
+		slog.Error("initializing webauthn failed", err)
 		os.Exit(1)
 	}
 
@@ -79,6 +87,7 @@ func main() {
 		database:       db,
 		sessionManager: sm,
 		taskScheduler:  chrono.NewDefaultTaskScheduler(),
+		webAuthn:       wa,
 	}
 
 	_, err = app.taskScheduler.ScheduleWithFixedDelay(func(ctx context.Context) {
@@ -86,17 +95,13 @@ func main() {
 	}, 20*time.Minute)
 
 	if err != nil {
-		logger.Error("scheduling cleanup task failed", err)
+		slog.Error("scheduling cleanup task failed", err)
 		os.Exit(1)
 	}
-
-	logger.Info("starting server", "addr", app.config.HTTP.Port, "version", version.Get())
 
 	err = app.serve()
 	if err != nil {
-		logger.Error("http serve failed", err)
+		slog.Error("http serve failed", err)
 		os.Exit(1)
 	}
-
-	logger.Info("server stopped")
 }

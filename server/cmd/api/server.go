@@ -20,38 +20,41 @@ func (app *application) serve() error {
 		IdleTimeout:  time.Duration(app.config.HTTP.IdleTimeoutInSeconds) * time.Second,
 	}
 
-	shutdownError := make(chan error)
+	shutdownErrorChan := make(chan error)
 
 	go func() {
-		quit := make(chan os.Signal, 1)
-		signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
-		<-quit
+		quitChan := make(chan os.Signal, 1)
+		signal.Notify(quitChan, syscall.SIGINT, syscall.SIGTERM)
+		<-quitChan
 
 		ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 		defer cancel()
 
-		shutdownChannel := app.taskScheduler.Shutdown()
-
-		err := srv.Shutdown(ctx)
-		if err != nil {
-			shutdownError <- err
-		}
-
-		<-shutdownChannel
-		app.wg.Wait()
-
-		shutdownError <- nil
+		shutdownErrorChan <- srv.Shutdown(ctx)
 	}()
+
+	slog.Info("starting server", "address", srv.Addr)
 
 	err := srv.ListenAndServe()
 	if !errors.Is(err, http.ErrServerClosed) {
 		return err
 	}
 
-	return <-shutdownError
+	err = <-shutdownErrorChan
+	if err != nil {
+		return err
+	}
+
+	slog.Info("stopped server", "address", srv.Addr)
+
+	shutdownChan := app.taskScheduler.Shutdown()
+	<-shutdownChan
+
+	app.wg.Wait()
+	return nil
 }
 
-func (app *application) background(fn func()) {
+func (app *application) backgroundTask(fn func()) {
 	app.wg.Add(1)
 
 	go func() {
@@ -61,7 +64,7 @@ func (app *application) background(fn func()) {
 				if e, ok := err.(error); ok {
 					slog.Error("background job failed", e)
 				} else {
-					slog.Default().Error("background job failed", nil, err)
+					slog.Error("background job failed", nil, err)
 				}
 			}
 		}()
