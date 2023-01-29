@@ -8,25 +8,25 @@ require (
 	github.com/friendsofgo/errors v0.9.2
 	github.com/go-chi/chi/v5 v5.0.8
 	github.com/go-chi/httprate v0.7.1
-	github.com/go-webauthn/webauthn v0.6.0
+	github.com/go-webauthn/webauthn v0.7.0
 	github.com/gobuffalo/validate v2.0.4+incompatible
 	github.com/jackc/pgx/v5 v5.2.0
-	github.com/pressly/goose/v3 v3.8.0
+	github.com/pressly/goose/v3 v3.9.0
 	github.com/procyon-projects/chrono v1.1.2
 	github.com/spf13/viper v1.15.0
 	github.com/tkrajina/typescriptify-golang-structs v0.1.10
 	github.com/volatiletech/null/v8 v8.1.2
 	github.com/volatiletech/sqlboiler/v4 v4.14.0
 	github.com/volatiletech/strmangle v0.0.4
-	golang.org/x/exp v0.0.0-20230118134722-a68e582fa157
+	golang.org/x/exp v0.0.0-20230127193734-31bee513bff7
 )
 
 require (
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
 	github.com/fxamacker/cbor/v2 v2.4.0 // indirect
-	github.com/go-webauthn/revoke v0.1.6 // indirect
-	github.com/gofrs/uuid v4.3.1+incompatible // indirect
+	github.com/go-webauthn/revoke v0.1.7 // indirect
+	github.com/gofrs/uuid v4.4.0+incompatible // indirect
 	github.com/golang-jwt/jwt/v4 v4.4.3 // indirect
 	github.com/google/go-tpm v0.3.3 // indirect
 	github.com/google/uuid v1.3.0 // indirect
