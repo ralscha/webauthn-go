@@ -1,6 +1,6 @@
 module webauthn.rasc.ch
 
-go 1.19
+go 1.20
 
 require (
 	github.com/alexedwards/scs/postgresstore v0.0.0-20221223131519-238b052508b6
