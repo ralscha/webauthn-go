@@ -11,7 +11,6 @@ import (
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"golang.org/x/exp/slog"
 	"log"
-	"math/rand"
 	"net/http"
 	"os"
 	"sync"
@@ -30,7 +29,6 @@ type application struct {
 }
 
 func main() {
-	rand.Seed(time.Now().UnixNano())
 	gob.Register(webauthn.SessionData{})
 	gob.Register(webauthn.Credential{})
 
