@@ -10,7 +10,7 @@ require (
 	github.com/go-chi/httprate v0.7.1
 	github.com/go-webauthn/webauthn v0.8.2
 	github.com/gobuffalo/validate v2.0.4+incompatible
-	github.com/jackc/pgx/v5 v5.3.0
+	github.com/jackc/pgx/v5 v5.3.1
 	github.com/pressly/goose/v3 v3.9.0
 	github.com/procyon-projects/chrono v1.1.2
 	github.com/spf13/viper v1.15.0
@@ -37,7 +37,7 @@ require (
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/onsi/ginkgo v1.16.5 // indirect
 	github.com/onsi/gomega v1.24.1 // indirect
-	github.com/pelletier/go-toml/v2 v2.0.6 // indirect
+	github.com/pelletier/go-toml/v2 v2.0.7 // indirect
 	github.com/rogpeppe/go-internal v1.8.0 // indirect
 	github.com/serenize/snaker v0.0.0-20201027110005-a7ad2135616e // indirect
 	github.com/spf13/afero v1.9.4 // indirect
