@@ -52,7 +52,14 @@ func (app *application) signUpStart(w http.ResponseWriter, r *http.Request) {
 	}
 
 	webAuthnUser := toWebAuthnUser(&user)
-	options, sessionData, err := app.webAuthn.BeginRegistration(webAuthnUser)
+
+	falsePtr := false
+	options, sessionData, err := app.webAuthn.BeginRegistration(webAuthnUser, webauthn.WithAuthenticatorSelection(protocol.AuthenticatorSelection{
+		AuthenticatorAttachment: protocol.CrossPlatform,
+		ResidentKey:             protocol.ResidentKeyRequirementPreferred,
+		UserVerification:        protocol.VerificationPreferred,
+		RequireResidentKey:      &falsePtr,
+	}))
 	if err != nil {
 		response.InternalServerError(w, err)
 		return
