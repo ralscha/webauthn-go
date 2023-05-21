@@ -9,7 +9,7 @@ import {
 } from "@github/webauthn-json/browser-ponyfill";
 import {environment} from '../../environments/environment';
 import {Errors, UsernameInput} from "../api/types";
-import {NgForm} from "@angular/forms";
+import {NgForm, NgModel} from "@angular/forms";
 import {displayFieldErrors} from "../util";
 import {Router} from "@angular/router";
 
@@ -49,6 +49,16 @@ export class SignUpPage {
           this.messagesService.showErrorToast('Sign up failed');
         }
       });
+  }
+
+  errorMsg(username: NgModel): string | null {
+    if (username.errors?.['required']) {
+      return 'Username is required';
+    }
+    if (username.errors?.['exists']) {
+      return 'Username already registered';
+    }
+    return null;
   }
 
   private async handleSignUpStartResponse(response: CredentialCreationOptionsJSON): Promise<void> {
