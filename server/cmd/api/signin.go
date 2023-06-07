@@ -8,49 +8,35 @@ import (
 	"github.com/go-webauthn/webauthn/protocol"
 	"github.com/go-webauthn/webauthn/webauthn"
 	"net/http"
-	"webauthn.rasc.ch/cmd/api/dto"
 	"webauthn.rasc.ch/internal/models"
-	"webauthn.rasc.ch/internal/request"
 	"webauthn.rasc.ch/internal/response"
 )
 
 func (app *application) signInStart(w http.ResponseWriter, r *http.Request) {
-	tx := r.Context().Value(transactionKey).(*sql.Tx)
-
-	var usernameInput dto.UsernameInput
-	if ok := request.DecodeJSONValidate[*dto.UsernameInput](w, r, &usernameInput, dto.ValidateUsernameInput); !ok {
-		return
-	}
-
-	// Find the user
-	user, err := models.AppUsers(models.AppUserWhere.Username.EQ(usernameInput.Username)).One(r.Context(), tx)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			response.Unauthorized(w)
-			return
-		}
-		response.InternalServerError(w, err)
-		return
-	}
-
-	credentials, err := models.AppCredentials(models.AppCredentialWhere.AppUserID.EQ(user.ID)).All(r.Context(), tx)
-	if err != nil {
-		response.InternalServerError(w, err)
-		return
-	}
-	webAuthnUser, err := toWebAuthnUserWithCredentials(user, credentials)
-	if err != nil {
-		response.InternalServerError(w, err)
-		return
-	}
-
-	options, sessionData, err := app.webAuthn.BeginLogin(webAuthnUser)
+	options, sessionData, err := app.webAuthn.BeginDiscoverableLogin(webauthn.WithUserVerification(protocol.VerificationPreferred))
 	if err != nil {
 		response.InternalServerError(w, err)
 		return
 	}
 	app.sessionManager.Put(r.Context(), "webAuthnSignInSessionData", sessionData)
 	response.JSON(w, http.StatusOK, options)
+}
+
+func (app *application) createDiscovarableUserHandler(r *http.Request) webauthn.DiscoverableUserHandler {
+	return func(rawID, userHandle []byte) (webauthn.User, error) {
+		tx := r.Context().Value(transactionKey).(*sql.Tx)
+
+		userID := bytesToInt64(userHandle)
+		user, err := models.FindAppUser(r.Context(), tx, userID)
+		if err != nil {
+			return nil, err
+		}
+		allUserCredentials, err := models.AppCredentials(models.AppCredentialWhere.AppUserID.EQ(user.ID)).All(r.Context(), tx)
+		if err != nil {
+			return nil, err
+		}
+		return toWebAuthnUserWithCredentials(user, allUserCredentials)
+	}
 }
 
 func (app *application) signInFinish(w http.ResponseWriter, r *http.Request) {
@@ -62,25 +48,12 @@ func (app *application) signInFinish(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userID := bytesToInt64(sessionData.UserID)
-	user, err := models.FindAppUser(r.Context(), tx, userID)
-	if err != nil {
-		response.InternalServerError(w, err)
-		return
-	}
-	allUserCredentials, err := models.AppCredentials(models.AppCredentialWhere.AppUserID.EQ(user.ID)).All(r.Context(), tx)
-	if err != nil {
-		response.InternalServerError(w, err)
-		return
-	}
-	webAuthnUser, err := toWebAuthnUserWithCredentials(user, allUserCredentials)
-	if err != nil {
-		response.InternalServerError(w, err)
-		return
-	}
-
 	parsedResponse, err := protocol.ParseCredentialRequestResponseBody(r.Body)
-	credential, err := app.webAuthn.ValidateLogin(webAuthnUser, sessionData, parsedResponse)
+	if err != nil {
+		response.InternalServerError(w, err)
+		return
+	}
+	credential, err := app.webAuthn.ValidateDiscoverableLogin(app.createDiscovarableUserHandler(r), sessionData, parsedResponse)
 	if err != nil {
 		response.InternalServerError(w, err)
 		return
@@ -95,7 +68,8 @@ func (app *application) signInFinish(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = models.AppCredentials(models.AppCredentialWhere.AppUserID.EQ(user.ID), models.AppCredentialWhere.ID.EQ(credential.ID)).
+	userID := bytesToInt64(parsedResponse.Response.UserHandle)
+	err = models.AppCredentials(models.AppCredentialWhere.AppUserID.EQ(userID), models.AppCredentialWhere.ID.EQ(credential.ID)).
 		UpdateAll(r.Context(), tx, models.M{models.AppCredentialColumns.Credential: byteBuffer.Bytes()})
 	if err != nil {
 		response.InternalServerError(w, err)
@@ -103,6 +77,6 @@ func (app *application) signInFinish(w http.ResponseWriter, r *http.Request) {
 	}
 
 	app.sessionManager.Remove(r.Context(), "webAuthnSignInSessionData")
-	app.sessionManager.Put(r.Context(), "userID", user.ID)
+	app.sessionManager.Put(r.Context(), "userID", userID)
 	w.WriteHeader(http.StatusOK)
 }

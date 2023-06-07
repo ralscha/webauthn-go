@@ -5,7 +5,6 @@ import {MessagesService} from '../messages.service';
 import {HttpClient} from '@angular/common/http';
 import {CredentialRequestOptionsJSON, get, parseRequestOptionsFromJSON,} from "@github/webauthn-json/browser-ponyfill";
 import {environment} from '../../environments/environment';
-import {UsernameInput} from "../api/types";
 
 @Component({
   selector: 'app-sign-in',
@@ -20,12 +19,11 @@ export class SignInPage {
               private readonly messagesService: MessagesService) {
   }
 
-  async signIn({username}: { username: string }): Promise<void> {
+  async signIn(): Promise<void> {
     const loading = await this.messagesService.showLoading('Starting sign in ...');
     await loading.present();
 
-    const userNameInput: UsernameInput = {username};
-    this.httpClient.post<CredentialRequestOptionsJSON>(`${environment.API_URL}/signin/start`, userNameInput)
+    this.httpClient.post<CredentialRequestOptionsJSON>(`${environment.API_URL}/signin/start`, null)
       .subscribe({
         next: response => {
           loading.dismiss();

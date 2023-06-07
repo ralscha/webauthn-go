@@ -5,34 +5,20 @@
 </ion-header>
 
 <ion-content class="ion-padding">
-  <form #form="ngForm" (keyup.enter)="form.valid && signIn(form.value)"
-        (ngSubmit)="form.valid && signIn(form.value)" novalidate>
-    <ion-grid>
-      <ion-row>
-        <ion-col>
-          <ion-item lines="none">
-            <ion-input [required]="true" autocomplete="username" errorText="Username is required" label="Username"
-                       labelPlacement="stacked"
-                       name="username" ngModel type="text"></ion-input>
-          </ion-item>
-        </ion-col>
-      </ion-row>
+  <ion-grid>
+    <ion-row>
+      <ion-col>
+        <ion-button (click)="signIn()" color="primary" expand="block" type="button">Sign in with passkey</ion-button>
+      </ion-col>
+    </ion-row>
 
-      <ion-row>
-        <ion-col>
-          <ion-button [disabled]="!form.valid" color="primary" expand="block" type="submit">Sign in</ion-button>
-        </ion-col>
-      </ion-row>
+    <ion-row>
+      <ion-col class="ion-margin-top">
+        <ion-button color="light" expand="block" routerDirection="forward" routerLink="/signup" type="button">
+          Sign Up
+        </ion-button>
+      </ion-col>
+    </ion-row>
 
-      <ion-row>
-        <ion-col class="ion-margin-top">
-          <ion-button color="light" expand="block" routerDirection="forward" routerLink="/signup" type="button">
-            Sign Up
-          </ion-button>
-        </ion-col>
-      </ion-row>
-
-    </ion-grid>
-
-  </form>
+  </ion-grid>
 </ion-content>
