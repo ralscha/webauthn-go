@@ -7,10 +7,10 @@ import {CredentialRequestOptionsJSON, get, parseRequestOptionsFromJSON,} from "@
 import {environment} from '../../environments/environment';
 
 @Component({
-  selector: 'app-sign-in',
-  templateUrl: './sign-in.page.html'
+  selector: 'app-login',
+  templateUrl: './login.page.html'
 })
-export class SignInPage {
+export class LoginPage {
 
   constructor(private readonly authService: AuthService,
               private readonly loadingCtrl: LoadingController,
@@ -19,42 +19,42 @@ export class SignInPage {
               private readonly messagesService: MessagesService) {
   }
 
-  async signIn(): Promise<void> {
-    const loading = await this.messagesService.showLoading('Starting sign in ...');
+  async login(): Promise<void> {
+    const loading = await this.messagesService.showLoading('Starting login ...');
     await loading.present();
 
-    this.httpClient.post<CredentialRequestOptionsJSON>(`${environment.API_URL}/signin/start`, null)
+    this.httpClient.post<CredentialRequestOptionsJSON>(`${environment.API_URL}/login/start`, null)
       .subscribe({
         next: response => {
           loading.dismiss();
-          this.handleSignInStartResponse(response);
+          this.handleLoginStartResponse(response);
         },
         error: () => {
           loading.dismiss();
-          this.messagesService.showErrorToast('Sign in failed');
+          this.messagesService.showErrorToast('Login failed');
         }
       });
   }
 
-  private async handleSignInStartResponse(response: CredentialRequestOptionsJSON): Promise<void> {
+  private async handleLoginStartResponse(response: CredentialRequestOptionsJSON): Promise<void> {
     let credential: object | null = null;
     try {
       credential = await get(parseRequestOptionsFromJSON(response));
     } catch (e) {
-      await this.messagesService.showErrorToast('Sign in failed with error ' + e);
+      await this.messagesService.showErrorToast('Login failed with error ' + e);
       return;
     }
     const loading = await this.messagesService.showLoading('Validating ...');
     await loading.present();
 
-    this.httpClient.post<void>(`${environment.API_URL}/signin/finish`, credential).subscribe({
+    this.httpClient.post<void>(`${environment.API_URL}/login/finish`, credential).subscribe({
       next: () => {
         loading.dismiss();
         this.navCtrl.navigateRoot('/home', {replaceUrl: true});
       },
       error: () => {
         loading.dismiss();
-        this.messagesService.showErrorToast('Sign in failed');
+        this.messagesService.showErrorToast('Login failed');
       }
     });
   }

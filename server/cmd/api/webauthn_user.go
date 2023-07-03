@@ -1,9 +1,8 @@
 package main
 
 import (
-	"bytes"
 	"encoding/binary"
-	"encoding/gob"
+	"encoding/json"
 	"github.com/go-webauthn/webauthn/webauthn"
 	"webauthn.rasc.ch/internal/models"
 )
@@ -44,9 +43,7 @@ func toWebAuthnUser(user *models.AppUser) *WebAuthnUser {
 func toWebAuthnUserWithCredentials(user *models.AppUser, credentials []*models.AppCredential) (*WebAuthnUser, error) {
 	webAuthnCredentials := make([]webauthn.Credential, len(credentials))
 	for i, c := range credentials {
-		buf := bytes.NewBuffer(c.Credential)
-		dec := gob.NewDecoder(buf)
-		err := dec.Decode(&webAuthnCredentials[i])
+		err := json.Unmarshal(c.Credential, &webAuthnCredentials[i])
 		if err != nil {
 			return nil, err
 		}

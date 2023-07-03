@@ -18,7 +18,7 @@ export class HomePage implements OnInit {
   }
 
   async logout(): Promise<void> {
-    this.authService.logout().subscribe(() => this.navCtrl.navigateRoot('/signin'));
+    this.authService.logout().subscribe(() => this.navCtrl.navigateRoot('/login'));
   }
 
   ngOnInit(): void {

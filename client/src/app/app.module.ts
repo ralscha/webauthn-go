@@ -6,12 +6,12 @@ import {IonicModule, IonicRouteStrategy} from '@ionic/angular';
 import {RouteReuseStrategy} from '@angular/router';
 import {HttpClientModule} from '@angular/common/http';
 import {FormsModule} from '@angular/forms';
-import {SignInPage} from './signin/sign-in.page';
+import {LoginPage} from './login/login.page';
 
 @NgModule({
   declarations: [
     AppComponent,
-    SignInPage
+    LoginPage
   ],
   imports: [
     BrowserModule,

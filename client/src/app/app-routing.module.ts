@@ -1,6 +1,6 @@
 import {inject, NgModule} from '@angular/core';
 import {PreloadAllModules, Router, RouterModule, Routes} from '@angular/router';
-import {SignInPage} from './signin/sign-in.page';
+import {LoginPage} from './login/login.page';
 import {AuthService} from "./auth.service";
 import {map} from "rxjs/operators";
 
@@ -14,7 +14,7 @@ export const authGuard = (authService = inject(AuthService), router = inject(Rou
       if (success) {
         return true;
       }
-      return router.createUrlTree(['/signin']);
+      return router.createUrlTree(['/login']);
     })
   );
 }
@@ -26,10 +26,10 @@ const routes: Routes = [
     canActivate: [() => authGuard()],
     loadChildren: () => import('./home/home.module').then(m => m.HomePageModule)
   },
-  {path: 'signin', component: SignInPage},
+  {path: 'login', component: LoginPage},
   {
-    path: 'signup',
-    loadChildren: () => import('./signup/sign-up.module').then(m => m.SignUpModule)
+    path: 'registration',
+    loadChildren: () => import('./registration/registration.module').then(m => m.RegistrationModule)
   }
 ];
 

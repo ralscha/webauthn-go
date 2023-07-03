@@ -14,27 +14,27 @@ import {displayFieldErrors} from "../util";
 import {Router} from "@angular/router";
 
 @Component({
-  selector: 'app-sign-up',
-  templateUrl: './sign-up.page.html'
+  selector: 'app-registration',
+  templateUrl: './registration.page.html'
 })
-export class SignUpPage {
+export class RegistrationPage {
   constructor(private readonly navCtrl: NavController,
               private readonly router: Router,
               private readonly messagesService: MessagesService,
               private readonly httpClient: HttpClient) {
   }
 
-  async signUp(form: NgForm, username: string | null): Promise<void> {
+  async register(form: NgForm, username: string | null): Promise<void> {
     if (!username) {
       return;
     }
 
-    const loading = await this.messagesService.showLoading('Starting sign up process...');
+    const loading = await this.messagesService.showLoading('Starting registration process...');
     await loading.present();
 
     const userNameInput: UsernameInput = {username};
 
-    this.httpClient.post<CredentialCreationOptionsJSON>(`${environment.API_URL}/signup/start`, userNameInput)
+    this.httpClient.post<CredentialCreationOptionsJSON>(`${environment.API_URL}/registration/start`, userNameInput)
       .subscribe({
         next: async (response) => {
           await loading.dismiss();
@@ -46,7 +46,7 @@ export class SignUpPage {
           if (response?.errors) {
             displayFieldErrors(form, response.errors)
           }
-          this.messagesService.showErrorToast('Sign up failed');
+          this.messagesService.showErrorToast('Registration failed');
         }
       });
   }
@@ -66,22 +66,22 @@ export class SignUpPage {
     try {
       credential = await create(parseCreationOptionsFromJSON(response));
     } catch (e) {
-      await this.messagesService.showErrorToast('Sign up failed with error ' + e);
+      await this.messagesService.showErrorToast('Registration failed with error ' + e);
       return;
     }
-    const loading = await this.messagesService.showLoading('Finishing sign up process...');
+    const loading = await this.messagesService.showLoading('Finishing registration process...');
     await loading.present();
 
-    this.httpClient.post(`${environment.API_URL}/signup/finish`, credential)
+    this.httpClient.post(`${environment.API_URL}/registration/finish`, credential)
       .subscribe({
         next: () => {
           loading.dismiss();
-          this.messagesService.showSuccessToast('Sign up successful');
-          this.router.navigate(['/signin']);
+          this.messagesService.showSuccessToast('Registration successful');
+          this.router.navigate(['/login']);
         },
         error: () => {
           loading.dismiss();
-          this.messagesService.showErrorToast('Sign up failed');
+          this.messagesService.showErrorToast('Registration failed');
         }
       });
   }

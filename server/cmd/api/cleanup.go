@@ -14,7 +14,7 @@ func (app *application) cleanup() {
 
 	// Delete all users with a pending registration older than 10 minutes
 	tenMinutesAgo := time.Now().Add(-10 * time.Minute)
-	err := models.AppUsers(models.AppUserWhere.SignUpStart.LT(null.Time{
+	err := models.AppUsers(models.AppUserWhere.RegistrationStart.LT(null.Time{
 		Time:  tenMinutesAgo,
 		Valid: true,
 	})).DeleteAll(ctx, app.database)

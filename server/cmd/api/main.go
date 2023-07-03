@@ -30,7 +30,6 @@ type application struct {
 
 func main() {
 	gob.Register(webauthn.SessionData{})
-	gob.Register(webauthn.Credential{})
 
 	cfg, err := config.LoadConfig()
 	if err != nil {

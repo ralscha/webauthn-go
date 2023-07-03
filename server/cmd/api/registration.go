@@ -1,9 +1,8 @@
 package main
 
 import (
-	"bytes"
 	"database/sql"
-	"encoding/gob"
+	"encoding/json"
 	"fmt"
 	"github.com/go-webauthn/webauthn/protocol"
 	"github.com/go-webauthn/webauthn/webauthn"
@@ -18,7 +17,9 @@ import (
 	"webauthn.rasc.ch/internal/response"
 )
 
-func (app *application) signUpStart(w http.ResponseWriter, r *http.Request) {
+const registrationSessionDataKey = "webAuthnRegistrationSessionData"
+
+func (app *application) registrationStart(w http.ResponseWriter, r *http.Request) {
 	tx := r.Context().Value(transactionKey).(*sql.Tx)
 
 	var usernameInput dto.UsernameInput
@@ -62,13 +63,14 @@ func (app *application) signUpStart(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	app.sessionManager.Put(r.Context(), "webAuthnSignUpSessionData", sessionData)
+	app.sessionManager.Put(r.Context(), registrationSessionDataKey, sessionData)
 	response.JSON(w, http.StatusOK, options)
 }
 
-func (app *application) signUpFinish(w http.ResponseWriter, r *http.Request) {
+func (app *application) registrationFinish(w http.ResponseWriter, r *http.Request) {
 	tx := r.Context().Value(transactionKey).(*sql.Tx)
-	sessionData, ok := app.sessionManager.Get(r.Context(), "webAuthnSignUpSessionData").(webauthn.SessionData)
+
+	sessionData, ok := app.sessionManager.Get(r.Context(), registrationSessionDataKey).(webauthn.SessionData)
 	if !ok {
 		err := fmt.Errorf("webAuthn session data not found")
 		response.InternalServerError(w, err)
@@ -94,9 +96,7 @@ func (app *application) signUpFinish(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	byteBuffer := new(bytes.Buffer)
-	encoder := gob.NewEncoder(byteBuffer)
-	err = encoder.Encode(credential)
+	credentialJson, err := json.Marshal(credential)
 	if err != nil {
 		response.InternalServerError(w, err)
 		return
@@ -105,7 +105,7 @@ func (app *application) signUpFinish(w http.ResponseWriter, r *http.Request) {
 	appCredential := models.AppCredential{
 		ID:         credential.ID,
 		AppUserID:  user.ID,
-		Credential: byteBuffer.Bytes(),
+		Credential: credentialJson,
 	}
 	if err := appCredential.Insert(r.Context(), tx, boil.Infer()); err != nil {
 		response.InternalServerError(w, err)
@@ -119,6 +119,6 @@ func (app *application) signUpFinish(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	app.sessionManager.Remove(r.Context(), "webAuthnSignUpSessionData")
+	app.sessionManager.Remove(r.Context(), registrationSessionDataKey)
 	w.WriteHeader(http.StatusOK)
 }

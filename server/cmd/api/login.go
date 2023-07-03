@@ -1,9 +1,8 @@
 package main
 
 import (
-	"bytes"
 	"database/sql"
-	"encoding/gob"
+	"encoding/json"
 	"fmt"
 	"github.com/go-webauthn/webauthn/protocol"
 	"github.com/go-webauthn/webauthn/webauthn"
@@ -12,36 +11,22 @@ import (
 	"webauthn.rasc.ch/internal/response"
 )
 
-func (app *application) signInStart(w http.ResponseWriter, r *http.Request) {
+const loginSessionDataKey = "webAuthnLoginSessionData"
+
+func (app *application) loginStart(w http.ResponseWriter, r *http.Request) {
 	options, sessionData, err := app.webAuthn.BeginDiscoverableLogin(webauthn.WithUserVerification(protocol.VerificationPreferred))
 	if err != nil {
 		response.InternalServerError(w, err)
 		return
 	}
-	app.sessionManager.Put(r.Context(), "webAuthnSignInSessionData", sessionData)
+
+	app.sessionManager.Put(r.Context(), loginSessionDataKey, sessionData)
 	response.JSON(w, http.StatusOK, options)
 }
 
-func (app *application) createDiscovarableUserHandler(r *http.Request) webauthn.DiscoverableUserHandler {
-	return func(rawID, userHandle []byte) (webauthn.User, error) {
-		tx := r.Context().Value(transactionKey).(*sql.Tx)
-
-		userID := bytesToInt64(userHandle)
-		user, err := models.FindAppUser(r.Context(), tx, userID)
-		if err != nil {
-			return nil, err
-		}
-		allUserCredentials, err := models.AppCredentials(models.AppCredentialWhere.AppUserID.EQ(user.ID)).All(r.Context(), tx)
-		if err != nil {
-			return nil, err
-		}
-		return toWebAuthnUserWithCredentials(user, allUserCredentials)
-	}
-}
-
-func (app *application) signInFinish(w http.ResponseWriter, r *http.Request) {
+func (app *application) loginFinish(w http.ResponseWriter, r *http.Request) {
 	tx := r.Context().Value(transactionKey).(*sql.Tx)
-	sessionData, ok := app.sessionManager.Get(r.Context(), "webAuthnSignInSessionData").(webauthn.SessionData)
+	sessionData, ok := app.sessionManager.Get(r.Context(), loginSessionDataKey).(webauthn.SessionData)
 	if !ok {
 		err := fmt.Errorf("webAuthn session data not found")
 		response.InternalServerError(w, err)
@@ -59,10 +44,8 @@ func (app *application) signInFinish(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// update credential
-	byteBuffer := new(bytes.Buffer)
-	encoder := gob.NewEncoder(byteBuffer)
-	err = encoder.Encode(credential)
+	// update credential, especially the counter
+	credentialJson, err := json.Marshal(credential)
 	if err != nil {
 		response.InternalServerError(w, err)
 		return
@@ -70,13 +53,30 @@ func (app *application) signInFinish(w http.ResponseWriter, r *http.Request) {
 
 	userID := bytesToInt64(parsedResponse.Response.UserHandle)
 	err = models.AppCredentials(models.AppCredentialWhere.AppUserID.EQ(userID), models.AppCredentialWhere.ID.EQ(credential.ID)).
-		UpdateAll(r.Context(), tx, models.M{models.AppCredentialColumns.Credential: byteBuffer.Bytes()})
+		UpdateAll(r.Context(), tx, models.M{models.AppCredentialColumns.Credential: credentialJson})
 	if err != nil {
 		response.InternalServerError(w, err)
 		return
 	}
 
-	app.sessionManager.Remove(r.Context(), "webAuthnSignInSessionData")
+	app.sessionManager.Remove(r.Context(), loginSessionDataKey)
 	app.sessionManager.Put(r.Context(), "userID", userID)
 	w.WriteHeader(http.StatusOK)
+}
+
+func (app *application) createDiscovarableUserHandler(r *http.Request) webauthn.DiscoverableUserHandler {
+	return func(rawID, userHandle []byte) (webauthn.User, error) {
+		tx := r.Context().Value(transactionKey).(*sql.Tx)
+
+		userID := bytesToInt64(userHandle)
+		user, err := models.FindAppUser(r.Context(), tx, userID)
+		if err != nil {
+			return nil, err
+		}
+		allUserCredentials, err := models.AppCredentials(models.AppCredentialWhere.AppUserID.EQ(user.ID)).All(r.Context(), tx)
+		if err != nil {
+			return nil, err
+		}
+		return toWebAuthnUserWithCredentials(user, allUserCredentials)
+	}
 }

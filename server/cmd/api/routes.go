@@ -35,10 +35,10 @@ func (app *application) routes() http.Handler {
 
 		r.Group(func(r chi.Router) {
 			r.Use(app.rwTransaction)
-			r.Post("/signin/start", app.signInStart)
-			r.Post("/signin/finish", app.signInFinish)
-			r.Post("/signup/start", app.signUpStart)
-			r.Post("/signup/finish", app.signUpFinish)
+			r.Post("/login/start", app.loginStart)
+			r.Post("/login/finish", app.loginFinish)
+			r.Post("/registration/start", app.registrationStart)
+			r.Post("/registration/finish", app.registrationFinish)
 		})
 
 		r.Group(func(r chi.Router) {
