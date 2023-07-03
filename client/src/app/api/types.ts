@@ -2,13 +2,11 @@
 
 
 export interface SecretOutput {
-  message: string;
+    message: string;
 }
-
 export interface UsernameInput {
-  username: string;
+    username: string;
 }
-
 export interface Errors {
-  errors: { [key: string]: string[] };
+    errors: {[key: string]: string[]};
 }

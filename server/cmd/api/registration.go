@@ -42,7 +42,7 @@ func (app *application) registrationStart(w http.ResponseWriter, r *http.Request
 
 	user := models.AppUser{
 		Username: usernameInput.Username,
-		SignUpStart: null.Time{
+		RegistrationStart: null.Time{
 			Time:  time.Now(),
 			Valid: true,
 		},
@@ -105,7 +105,7 @@ func (app *application) registrationFinish(w http.ResponseWriter, r *http.Reques
 	appCredential := models.AppCredential{
 		ID:         credential.ID,
 		AppUserID:  user.ID,
-		Credential: credentialJson,
+		Credential: string(credentialJson),
 	}
 	if err := appCredential.Insert(r.Context(), tx, boil.Infer()); err != nil {
 		response.InternalServerError(w, err)
@@ -113,7 +113,7 @@ func (app *application) registrationFinish(w http.ResponseWriter, r *http.Reques
 	}
 
 	err = models.AppUsers(models.AppUserWhere.ID.EQ(user.ID)).
-		UpdateAll(r.Context(), tx, models.M{models.AppUserColumns.SignUpStart: null.Time{Valid: false}})
+		UpdateAll(r.Context(), tx, models.M{models.AppUserColumns.RegistrationStart: null.Time{Valid: false}})
 	if err != nil {
 		response.InternalServerError(w, err)
 		return

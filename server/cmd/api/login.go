@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
 	"fmt"
@@ -38,20 +39,22 @@ func (app *application) loginFinish(w http.ResponseWriter, r *http.Request) {
 		response.InternalServerError(w, err)
 		return
 	}
-	credential, err := app.webAuthn.ValidateDiscoverableLogin(app.createDiscovarableUserHandler(r), sessionData, parsedResponse)
-	if err != nil {
-		response.InternalServerError(w, err)
-		return
-	}
 
-	// update credential, especially the counter
-	credentialJson, err := json.Marshal(credential)
+	credential, err := app.webAuthn.ValidateDiscoverableLogin(app.createDiscovarableUserHandler(r.Context(), tx), sessionData, parsedResponse)
 	if err != nil {
 		response.InternalServerError(w, err)
 		return
 	}
 
 	userID := bytesToInt64(parsedResponse.Response.UserHandle)
+
+	// update credential
+	credentialJson, err := json.Marshal(credential)
+	if err != nil {
+		response.InternalServerError(w, err)
+		return
+	}
+
 	err = models.AppCredentials(models.AppCredentialWhere.AppUserID.EQ(userID), models.AppCredentialWhere.ID.EQ(credential.ID)).
 		UpdateAll(r.Context(), tx, models.M{models.AppCredentialColumns.Credential: credentialJson})
 	if err != nil {
@@ -64,16 +67,14 @@ func (app *application) loginFinish(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-func (app *application) createDiscovarableUserHandler(r *http.Request) webauthn.DiscoverableUserHandler {
+func (app *application) createDiscovarableUserHandler(ctx context.Context, tx *sql.Tx) webauthn.DiscoverableUserHandler {
 	return func(rawID, userHandle []byte) (webauthn.User, error) {
-		tx := r.Context().Value(transactionKey).(*sql.Tx)
-
 		userID := bytesToInt64(userHandle)
-		user, err := models.FindAppUser(r.Context(), tx, userID)
+		user, err := models.FindAppUser(ctx, tx, userID)
 		if err != nil {
 			return nil, err
 		}
-		allUserCredentials, err := models.AppCredentials(models.AppCredentialWhere.AppUserID.EQ(user.ID)).All(r.Context(), tx)
+		allUserCredentials, err := models.AppCredentials(models.AppCredentialWhere.AppUserID.EQ(user.ID)).All(ctx, tx)
 		if err != nil {
 			return nil, err
 		}

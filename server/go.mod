@@ -8,10 +8,10 @@ require (
 	github.com/friendsofgo/errors v0.9.2
 	github.com/go-chi/chi/v5 v5.0.8
 	github.com/go-chi/httprate v0.7.4
-	github.com/go-webauthn/webauthn v0.8.2
+	github.com/go-webauthn/webauthn v0.8.3-0.20230628004000-6b92b6993cf6
 	github.com/gobuffalo/validate v2.0.4+incompatible
 	github.com/jackc/pgx/v5 v5.4.1
-	github.com/pressly/goose/v3 v3.13.0
+	github.com/pressly/goose/v3 v3.13.1
 	github.com/procyon-projects/chrono v1.1.2
 	github.com/spf13/viper v1.16.0
 	github.com/tkrajina/typescriptify-golang-structs v0.1.10
@@ -25,7 +25,7 @@ require (
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
 	github.com/fxamacker/cbor/v2 v2.4.0 // indirect
-	github.com/go-webauthn/revoke v0.1.10 // indirect
+	github.com/go-webauthn/x v0.1.2 // indirect
 	github.com/gofrs/uuid v4.4.0+incompatible // indirect
 	github.com/golang-jwt/jwt/v4 v4.5.0 // indirect
 	github.com/google/go-tpm v0.9.0 // indirect

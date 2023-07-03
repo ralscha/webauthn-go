@@ -9,7 +9,7 @@ import (
 
 func (app *application) secret(w http.ResponseWriter, r *http.Request) {
 	userID := app.sessionManager.GetInt64(r.Context(), "userID")
-	slog.Info("User ID", userID)
+	slog.Info("fetch secret", "User ID", userID)
 
 	response.JSON(w, http.StatusOK, dto.SecretOutput{
 		Message: "This is a secret message",

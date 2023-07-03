@@ -25,7 +25,7 @@ import (
 type AppCredential struct {
 	ID         []byte `boil:"id" json:"id" toml:"id" yaml:"id"`
 	AppUserID  int64  `boil:"app_user_id" json:"app_user_id" toml:"app_user_id" yaml:"app_user_id"`
-	Credential []byte `boil:"credential" json:"credential" toml:"credential" yaml:"credential"`
+	Credential string `boil:"credential" json:"credential" toml:"credential" yaml:"credential"`
 
 	R *appCredentialR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L appCredentialL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -85,14 +85,37 @@ func (w whereHelperint64) NIN(slice []int64) qm.QueryMod {
 	return qm.WhereNotIn(fmt.Sprintf("%s NOT IN ?", w.field), values...)
 }
 
+type whereHelperstring struct{ field string }
+
+func (w whereHelperstring) EQ(x string) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.EQ, x) }
+func (w whereHelperstring) NEQ(x string) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.NEQ, x) }
+func (w whereHelperstring) LT(x string) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.LT, x) }
+func (w whereHelperstring) LTE(x string) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.LTE, x) }
+func (w whereHelperstring) GT(x string) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.GT, x) }
+func (w whereHelperstring) GTE(x string) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.GTE, x) }
+func (w whereHelperstring) IN(slice []string) qm.QueryMod {
+	values := make([]interface{}, 0, len(slice))
+	for _, value := range slice {
+		values = append(values, value)
+	}
+	return qm.WhereIn(fmt.Sprintf("%s IN ?", w.field), values...)
+}
+func (w whereHelperstring) NIN(slice []string) qm.QueryMod {
+	values := make([]interface{}, 0, len(slice))
+	for _, value := range slice {
+		values = append(values, value)
+	}
+	return qm.WhereNotIn(fmt.Sprintf("%s NOT IN ?", w.field), values...)
+}
+
 var AppCredentialWhere = struct {
 	ID         whereHelper__byte
 	AppUserID  whereHelperint64
-	Credential whereHelper__byte
+	Credential whereHelperstring
 }{
 	ID:         whereHelper__byte{field: "\"app_credentials\".\"id\""},
 	AppUserID:  whereHelperint64{field: "\"app_credentials\".\"app_user_id\""},
-	Credential: whereHelper__byte{field: "\"app_credentials\".\"credential\""},
+	Credential: whereHelperstring{field: "\"app_credentials\".\"credential\""},
 }
 
 // AppCredentialRels is where relationship names are stored.

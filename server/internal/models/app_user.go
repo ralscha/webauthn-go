@@ -24,58 +24,35 @@ import (
 
 // AppUser is an object representing the database table.
 type AppUser struct {
-	ID          int64     `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Username    string    `boil:"username" json:"username" toml:"username" yaml:"username"`
-	SignUpStart null.Time `boil:"sign_up_start" json:"sign_up_start,omitempty" toml:"sign_up_start" yaml:"sign_up_start,omitempty"`
+	ID                int64     `boil:"id" json:"id" toml:"id" yaml:"id"`
+	Username          string    `boil:"username" json:"username" toml:"username" yaml:"username"`
+	RegistrationStart null.Time `boil:"registration_start" json:"registration_start,omitempty" toml:"registration_start" yaml:"registration_start,omitempty"`
 
 	R *appUserR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L appUserL  `boil:"-" json:"-" toml:"-" yaml:"-"`
 }
 
 var AppUserColumns = struct {
-	ID          string
-	Username    string
-	SignUpStart string
+	ID                string
+	Username          string
+	RegistrationStart string
 }{
-	ID:          "id",
-	Username:    "username",
-	SignUpStart: "sign_up_start",
+	ID:                "id",
+	Username:          "username",
+	RegistrationStart: "registration_start",
 }
 
 var AppUserTableColumns = struct {
-	ID          string
-	Username    string
-	SignUpStart string
+	ID                string
+	Username          string
+	RegistrationStart string
 }{
-	ID:          "app_user.id",
-	Username:    "app_user.username",
-	SignUpStart: "app_user.sign_up_start",
+	ID:                "app_user.id",
+	Username:          "app_user.username",
+	RegistrationStart: "app_user.registration_start",
 }
 
 // Generated where
-
-type whereHelperstring struct{ field string }
-
-func (w whereHelperstring) EQ(x string) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.EQ, x) }
-func (w whereHelperstring) NEQ(x string) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.NEQ, x) }
-func (w whereHelperstring) LT(x string) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.LT, x) }
-func (w whereHelperstring) LTE(x string) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.LTE, x) }
-func (w whereHelperstring) GT(x string) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.GT, x) }
-func (w whereHelperstring) GTE(x string) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.GTE, x) }
-func (w whereHelperstring) IN(slice []string) qm.QueryMod {
-	values := make([]interface{}, 0, len(slice))
-	for _, value := range slice {
-		values = append(values, value)
-	}
-	return qm.WhereIn(fmt.Sprintf("%s IN ?", w.field), values...)
-}
-func (w whereHelperstring) NIN(slice []string) qm.QueryMod {
-	values := make([]interface{}, 0, len(slice))
-	for _, value := range slice {
-		values = append(values, value)
-	}
-	return qm.WhereNotIn(fmt.Sprintf("%s NOT IN ?", w.field), values...)
-}
 
 type whereHelpernull_Time struct{ field string }
 
@@ -102,13 +79,13 @@ func (w whereHelpernull_Time) IsNull() qm.QueryMod    { return qmhelper.WhereIsN
 func (w whereHelpernull_Time) IsNotNull() qm.QueryMod { return qmhelper.WhereIsNotNull(w.field) }
 
 var AppUserWhere = struct {
-	ID          whereHelperint64
-	Username    whereHelperstring
-	SignUpStart whereHelpernull_Time
+	ID                whereHelperint64
+	Username          whereHelperstring
+	RegistrationStart whereHelpernull_Time
 }{
-	ID:          whereHelperint64{field: "\"app_user\".\"id\""},
-	Username:    whereHelperstring{field: "\"app_user\".\"username\""},
-	SignUpStart: whereHelpernull_Time{field: "\"app_user\".\"sign_up_start\""},
+	ID:                whereHelperint64{field: "\"app_user\".\"id\""},
+	Username:          whereHelperstring{field: "\"app_user\".\"username\""},
+	RegistrationStart: whereHelpernull_Time{field: "\"app_user\".\"registration_start\""},
 }
 
 // AppUserRels is where relationship names are stored.
@@ -139,9 +116,9 @@ func (r *appUserR) GetAppCredentials() AppCredentialSlice {
 type appUserL struct{}
 
 var (
-	appUserAllColumns            = []string{"id", "username", "sign_up_start"}
+	appUserAllColumns            = []string{"id", "username", "registration_start"}
 	appUserColumnsWithoutDefault = []string{"username"}
-	appUserColumnsWithDefault    = []string{"id", "sign_up_start"}
+	appUserColumnsWithDefault    = []string{"id", "registration_start"}
 	appUserPrimaryKeyColumns     = []string{"id"}
 	appUserGeneratedColumns      = []string{}
 )

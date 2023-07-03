@@ -161,10 +161,10 @@ github.com/go-logfmt/logfmt v0.5.0/go.mod h1:wCYkCAKZfumFQihp8CzCvQ3paCTfi41vtzG
 github.com/go-sql-driver/mysql v1.6.0/go.mod h1:DCzpHaOWr8IXmIStZouvnhqoel9Qv2LBy8hT2VhHyBg=
 github.com/go-stack/stack v1.8.0/go.mod h1:v0f6uXyyMGvRgIKkXu+yp6POWl0qKG85gN/melR3HDY=
 github.com/go-task/slim-sprig v0.0.0-20210107165309-348f09dbbbc0/go.mod h1:fyg7847qk6SyHyPtNmDHnmrv/HOrqktSC+C9fM+CJOE=
-github.com/go-webauthn/revoke v0.1.10 h1:GSJNJ8NbgeMaINAxMV7D4uBjyQnqCzAfB8ZfgNyTqqA=
-github.com/go-webauthn/revoke v0.1.10/go.mod h1:rwjnIbJHdWgp9jlRU8Y3r7DX8PZ8+ZusDaMVhaMIMrk=
-github.com/go-webauthn/webauthn v0.8.2 h1:8KLIbpldjz9KVGHfqEgJNbkhd7bbRXhNw4QWFJE15oA=
-github.com/go-webauthn/webauthn v0.8.2/go.mod h1:d+ezx/jMCNDiqSMzOchuynKb9CVU1NM9BumOnokfcVQ=
+github.com/go-webauthn/webauthn v0.8.3-0.20230628004000-6b92b6993cf6 h1:symBJAEWucY6WYzfw2zLLj30L58N99Kk+8OSOmq4q2Y=
+github.com/go-webauthn/webauthn v0.8.3-0.20230628004000-6b92b6993cf6/go.mod h1:67TrapzqzDirIss8mYT+BcMoo3fVqQ2/zlS2aCL6REE=
+github.com/go-webauthn/x v0.1.2 h1:PMV340FbgkftsQde75hoZpLkeaRC+1WFSYxJFg5OgeU=
+github.com/go-webauthn/x v0.1.2/go.mod h1:4NjxhWb1fISfhyTBEvJKmKa0ytlJeZpvnDtcXqksuTk=
 github.com/gobuffalo/validate v2.0.4+incompatible h1:ZTxozrIw8qQ5nfhShmc4izjYPTsPhfdXTdhXOd5OS9o=
 github.com/gobuffalo/validate v2.0.4+incompatible/go.mod h1:N+EtDe0J8252BgfzQUChBgfd6L93m9weay53EWFVsMM=
 github.com/godbus/dbus/v5 v5.0.4/go.mod h1:xhWf0FNVPg57R7Z0UbKHbJfkEywrmjJnf7w5xrFpKfA=
@@ -413,8 +413,8 @@ github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZb
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/posener/complete v1.1.1/go.mod h1:em0nMJCgc9GFtwrmVmEMR/ZL6WyhyjMBndrE9hABlRI=
 github.com/posener/complete v1.2.3/go.mod h1:WZIdtGGp+qx0sLrYKtIRAruyNpv6hFCicSgv7Sy7s/s=
-github.com/pressly/goose/v3 v3.13.0 h1:pJoIca9/9RwYVnSpk9riQotHIvkEC+fipyC/lkIKW98=
-github.com/pressly/goose/v3 v3.13.0/go.mod h1:1WCIzQuOGhpx+D7bal+tGadbwVPmdfy9fltqYLMA8lM=
+github.com/pressly/goose/v3 v3.13.1 h1:4kYsfsboJvQDg1MEcMnXs8ubbz4AeHHXMW19XEAy3vI=
+github.com/pressly/goose/v3 v3.13.1/go.mod h1:1WCIzQuOGhpx+D7bal+tGadbwVPmdfy9fltqYLMA8lM=
 github.com/procyon-projects/chrono v1.1.2 h1:Uw7V96Ckl/pOeMBNvaEki7k6Ssgd9OX8b9PY0gpXmoU=
 github.com/procyon-projects/chrono v1.1.2/go.mod h1:RwQ27W7hRaq+QUWN2yXU3BDG2FUyEQiKds8/M1FI5C8=
 github.com/prometheus/client_golang v0.9.1/go.mod h1:7SWBe2y4D6OKWSNQJUaRYU/AaXPKyh/dDVn+NZz0KFw=
@@ -484,8 +484,8 @@ github.com/stretchr/testify v1.7.0/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/
 github.com/stretchr/testify v1.7.1/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
 github.com/stretchr/testify v1.7.5/go.mod h1:yNjHg4UonilssWZ8iaSj1OCr/vHnekPRkoO+kdMU+MU=
 github.com/stretchr/testify v1.8.0/go.mod h1:yNjHg4UonilssWZ8iaSj1OCr/vHnekPRkoO+kdMU+MU=
-github.com/stretchr/testify v1.8.3 h1:RP3t2pwF7cMEbC1dqtB6poj3niw/9gnV4Cjg5oW5gtY=
 github.com/stretchr/testify v1.8.3/go.mod h1:sz/lmYIOXD/1dqDmKjjqLyZ2RngseejIcXlSw2iwfAo=
+github.com/stretchr/testify v1.8.4 h1:CcVxjf3Q8PM0mHUKJCdn+eZZtm5yQwehR5yeSVQQcUk=
 github.com/subosito/gotenv v1.3.0/go.mod h1:YzJjq/33h7nrwdY+iHMhEOEEbW0ovIz0tB6t6PwAXzs=
 github.com/subosito/gotenv v1.4.1/go.mod h1:ayKnFf/c6rvx/2iiLrJUk1e6plDbT3edrFNGqEflhK0=
 github.com/subosito/gotenv v1.4.2 h1:X1TuBLAMDFbaTAChgCBLu3DU3UPyELpnF2jjJ2cz/S8=

@@ -43,7 +43,7 @@ func toWebAuthnUser(user *models.AppUser) *WebAuthnUser {
 func toWebAuthnUserWithCredentials(user *models.AppUser, credentials []*models.AppCredential) (*WebAuthnUser, error) {
 	webAuthnCredentials := make([]webauthn.Credential, len(credentials))
 	for i, c := range credentials {
-		err := json.Unmarshal(c.Credential, &webAuthnCredentials[i])
+		err := json.Unmarshal([]byte(c.Credential), &webAuthnCredentials[i])
 		if err != nil {
 			return nil, err
 		}
