@@ -10,7 +10,11 @@ CREATE TABLE app_credentials
 (
     id          BYTEA  NOT NULL,
     app_user_id BIGINT NOT NULL,
-    credential  VARCHAR(4000)  NOT NULL,
+    public_key  BYTEA  NOT NULL,
+    attestation_type VARCHAR(50) NULL,
+    transports VARCHAR(255) NULL,
+    aa_guid BYTEA NOT NULL,
+    sign_count INTEGER NOT NULL,
     PRIMARY KEY (id, app_user_id),
     FOREIGN KEY (app_user_id) REFERENCES app_user (id) ON DELETE CASCADE
 );

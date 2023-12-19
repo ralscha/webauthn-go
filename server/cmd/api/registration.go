@@ -2,7 +2,6 @@ package main
 
 import (
 	"database/sql"
-	"encoding/json"
 	"fmt"
 	"github.com/go-webauthn/webauthn/protocol"
 	"github.com/go-webauthn/webauthn/webauthn"
@@ -10,6 +9,7 @@ import (
 	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"net/http"
+	"strings"
 	"time"
 	"webauthn.rasc.ch/cmd/api/dto"
 	"webauthn.rasc.ch/internal/models"
@@ -96,16 +96,26 @@ func (app *application) registrationFinish(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	credentialJson, err := json.Marshal(credential)
-	if err != nil {
-		response.InternalServerError(w, err)
-		return
+	var transportStrings []string
+	for _, transport := range credential.Transport {
+		transportStrings = append(transportStrings, string(transport))
 	}
+	transports := strings.Join(transportStrings, ",")
 
 	appCredential := models.AppCredential{
-		ID:         credential.ID,
-		AppUserID:  user.ID,
-		Credential: string(credentialJson),
+		ID:        credential.ID,
+		AppUserID: user.ID,
+		PublicKey: credential.PublicKey,
+		AttestationType: null.String{
+			String: credential.AttestationType,
+			Valid:  credential.AttestationType != "",
+		},
+		AaGUID:    credential.Authenticator.AAGUID,
+		SignCount: int(credential.Authenticator.SignCount),
+		Transports: null.String{
+			String: transports,
+			Valid:  transports != "",
+		},
 	}
 	if err := appCredential.Insert(r.Context(), tx, boil.Infer()); err != nil {
 		response.InternalServerError(w, err)

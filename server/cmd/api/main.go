@@ -1,13 +1,13 @@
 package main
 
 import (
+	"codnect.io/chrono"
 	"context"
 	"database/sql"
 	"encoding/gob"
 	"github.com/alexedwards/scs/postgresstore"
 	"github.com/alexedwards/scs/v2"
 	"github.com/go-webauthn/webauthn/webauthn"
-	"github.com/procyon-projects/chrono"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"golang.org/x/exp/slog"
 	"log"

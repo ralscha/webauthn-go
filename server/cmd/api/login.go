@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"database/sql"
-	"encoding/json"
 	"fmt"
 	"github.com/go-webauthn/webauthn/protocol"
 	"github.com/go-webauthn/webauthn/webauthn"
@@ -46,17 +45,19 @@ func (app *application) loginFinish(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userID := bytesToInt64(parsedResponse.Response.UserHandle)
-
-	// update credential
-	credentialJson, err := json.Marshal(credential)
-	if err != nil {
-		response.InternalServerError(w, err)
+	if credential.Authenticator.CloneWarning {
+		response.InternalServerError(w, fmt.Errorf("authenticator may be cloned"))
 		return
 	}
+	userID := bytesToInt64(parsedResponse.Response.UserHandle)
 
-	err = models.AppCredentials(models.AppCredentialWhere.AppUserID.EQ(userID), models.AppCredentialWhere.ID.EQ(credential.ID)).
-		UpdateAll(r.Context(), tx, models.M{models.AppCredentialColumns.Credential: credentialJson})
+	err = models.AppCredentials(
+		models.AppCredentialWhere.AppUserID.EQ(userID),
+		models.AppCredentialWhere.ID.EQ(credential.ID),
+	).
+		UpdateAll(r.Context(), tx,
+			models.M{models.AppCredentialColumns.SignCount: credential.Authenticator.SignCount},
+		)
 	if err != nil {
 		response.InternalServerError(w, err)
 		return

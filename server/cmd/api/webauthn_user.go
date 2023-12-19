@@ -2,8 +2,9 @@ package main
 
 import (
 	"encoding/binary"
-	"encoding/json"
+	"github.com/go-webauthn/webauthn/protocol"
 	"github.com/go-webauthn/webauthn/webauthn"
+	"strings"
 	"webauthn.rasc.ch/internal/models"
 )
 
@@ -43,9 +44,21 @@ func toWebAuthnUser(user *models.AppUser) *WebAuthnUser {
 func toWebAuthnUserWithCredentials(user *models.AppUser, credentials []*models.AppCredential) (*WebAuthnUser, error) {
 	webAuthnCredentials := make([]webauthn.Credential, len(credentials))
 	for i, c := range credentials {
-		err := json.Unmarshal([]byte(c.Credential), &webAuthnCredentials[i])
-		if err != nil {
-			return nil, err
+		var transports []protocol.AuthenticatorTransport
+		if c.Transports.Valid {
+			for _, t := range strings.Split(c.Transports.String, ",") {
+				transports = append(transports, protocol.AuthenticatorTransport(t))
+			}
+		}
+		webAuthnCredentials[i] = webauthn.Credential{
+			ID:              c.ID,
+			PublicKey:       c.PublicKey,
+			AttestationType: c.AttestationType.String,
+			Transport:       transports,
+			Authenticator: webauthn.Authenticator{
+				AAGUID:    c.AaGUID,
+				SignCount: uint32(c.SignCount),
+			},
 		}
 	}
 
