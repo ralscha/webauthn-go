@@ -85,12 +85,7 @@ func (app *application) registrationFinish(w http.ResponseWriter, r *http.Reques
 	}
 	webAuthnUser := toWebAuthnUser(user)
 
-	parsedResponse, err := protocol.ParseCredentialCreationResponseBody(r.Body)
-	if err != nil {
-		response.InternalServerError(w, err)
-		return
-	}
-	credential, err := app.webAuthn.CreateCredential(webAuthnUser, sessionData, parsedResponse)
+	credential, err := app.webAuthn.FinishRegistration(webAuthnUser, sessionData, r)
 	if err != nil {
 		response.InternalServerError(w, err)
 		return
