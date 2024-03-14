@@ -11,7 +11,7 @@ require (
 	github.com/go-chi/httprate v0.9.0
 	github.com/go-webauthn/webauthn v0.10.1
 	github.com/gobuffalo/validate v2.0.4+incompatible
-	github.com/jackc/pgx/v5 v5.5.3
+	github.com/jackc/pgx/v5 v5.5.4
 	github.com/pressly/goose/v3 v3.18.0
 	github.com/spf13/viper v1.18.2
 	github.com/tkrajina/typescriptify-golang-structs v0.1.11
