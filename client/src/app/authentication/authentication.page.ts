@@ -1,20 +1,17 @@
 import {Component} from '@angular/core';
-import {AuthService} from '../auth.service';
-import {LoadingController, NavController} from '@ionic/angular';
+import {NavController} from '@ionic/angular';
 import {MessagesService} from '../messages.service';
-import {HttpClient} from '@angular/common/http';
-import {CredentialRequestOptionsJSON, get, parseRequestOptionsFromJSON,} from "@github/webauthn-json/browser-ponyfill";
+import { HttpClient } from '@angular/common/http';
 import {environment} from '../../environments/environment';
-
+import { startAuthentication } from '@simplewebauthn/browser';
+import {AuthenticationResponseJSON, PublicKeyCredentialRequestOptionsJSON} from "@simplewebauthn/types";
 @Component({
-  selector: 'app-login',
-  templateUrl: './login.page.html'
+  selector: 'app-authentication',
+  templateUrl: './authentication.page.html'
 })
-export class LoginPage {
+export class AuthenticationPage {
 
-  constructor(private readonly authService: AuthService,
-              private readonly loadingCtrl: LoadingController,
-              private readonly navCtrl: NavController,
+  constructor(private readonly navCtrl: NavController,
               private readonly httpClient: HttpClient,
               private readonly messagesService: MessagesService) {
   }
@@ -23,7 +20,7 @@ export class LoginPage {
     const loading = await this.messagesService.showLoading('Starting login ...');
     await loading.present();
 
-    this.httpClient.post<CredentialRequestOptionsJSON>(`${environment.API_URL}/login/start`, null)
+    this.httpClient.post<PublicKeyCredentialRequestOptionsJSON>(`${environment.API_URL}/authentication/start`, null)
       .subscribe({
         next: response => {
           loading.dismiss();
@@ -36,10 +33,10 @@ export class LoginPage {
       });
   }
 
-  private async handleLoginStartResponse(response: CredentialRequestOptionsJSON): Promise<void> {
-    let credential: object | null = null;
+  private async handleLoginStartResponse(response: PublicKeyCredentialRequestOptionsJSON): Promise<void> {
+    let authenticationResponse: AuthenticationResponseJSON | null = null;
     try {
-      credential = await get(parseRequestOptionsFromJSON(response));
+      authenticationResponse = await startAuthentication(response);
     } catch (e) {
       await this.messagesService.showErrorToast('Login failed with error ' + e);
       return;
@@ -47,7 +44,7 @@ export class LoginPage {
     const loading = await this.messagesService.showLoading('Validating ...');
     await loading.present();
 
-    this.httpClient.post<void>(`${environment.API_URL}/login/finish`, credential).subscribe({
+    this.httpClient.post<void>(`${environment.API_URL}/authentication/finish`, authenticationResponse).subscribe({
       next: () => {
         loading.dismiss();
         this.navCtrl.navigateRoot('/home', {replaceUrl: true});

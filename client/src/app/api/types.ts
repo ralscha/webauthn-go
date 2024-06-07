@@ -8,5 +8,5 @@ export interface UsernameInput {
     username: string;
 }
 export interface Errors {
-    errors: {[key: string]: string[]};
+    errors: Record<string, string[]>;
 }

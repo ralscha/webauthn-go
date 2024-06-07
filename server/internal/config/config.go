@@ -13,11 +13,13 @@ const (
 )
 
 type Config struct {
-	Environment     Environment
-	SecureCookie    bool
-	CookieDomain    string
-	SessionLifetime time.Duration
-	DB              struct {
+	Environment Environment
+	Session     struct {
+		SecureCookie bool
+		CookieDomain string
+		Lifetime     time.Duration
+	}
+	DB struct {
 		User         string
 		Password     string
 		Connection   string
@@ -28,7 +30,7 @@ type Config struct {
 		MaxLifetime  string
 	}
 	HTTP struct {
-		Port                  string
+		Addr                  string
 		ReadTimeoutInSeconds  int64
 		WriteTimeoutInSeconds int64
 		IdleTimeoutInSeconds  int64
@@ -45,12 +47,12 @@ func applyDefaults() {
 	viper.SetDefault("http.readTimeoutInSeconds", 30)
 	viper.SetDefault("http.writeTimeoutInSeconds", 30)
 	viper.SetDefault("http.idleTimeoutInSeconds", 120)
-	viper.SetDefault("sessionLifetime", "24h")
 	viper.SetDefault("db.maxOpenConns", 4)
 	viper.SetDefault("db.maxIdleConns", 2)
 	viper.SetDefault("db.maxIdleTime", "15m")
 	viper.SetDefault("db.maxLifetime", "2h")
-	viper.SetDefault("secureCookie", true)
+	viper.SetDefault("session.secureCookie", true)
+	viper.SetDefault("session.lifetime", "24h")
 }
 
 func LoadConfig() (Config, error) {
@@ -58,7 +60,7 @@ func LoadConfig() (Config, error) {
 
 	applyDefaults()
 	viper.SetConfigName("app")
-	viper.SetConfigType("env")
+	viper.SetConfigType("yaml")
 	viper.AddConfigPath(".")
 	err := viper.ReadInConfig()
 	if err != nil {

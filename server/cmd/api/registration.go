@@ -1,15 +1,14 @@
 package main
 
 import (
+	"crypto/rand"
 	"database/sql"
 	"fmt"
 	"github.com/go-webauthn/webauthn/protocol"
 	"github.com/go-webauthn/webauthn/webauthn"
-	"github.com/gobuffalo/validate"
 	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"net/http"
-	"strings"
 	"time"
 	"webauthn.rasc.ch/cmd/api/dto"
 	"webauthn.rasc.ch/internal/models"
@@ -18,6 +17,7 @@ import (
 )
 
 const registrationSessionDataKey = "webAuthnRegistrationSessionData"
+const registrationSessionUserId = "webAuthnRegistrationSessionUserId"
 
 func (app *application) registrationStart(w http.ResponseWriter, r *http.Request) {
 	tx := r.Context().Value(transactionKey).(*sql.Tx)
@@ -27,20 +27,7 @@ func (app *application) registrationStart(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	// check if username is already taken
-	usernameExists, err := models.AppUsers(models.AppUserWhere.Username.EQ(usernameInput.Username)).Exists(r.Context(), tx)
-	if err != nil {
-		response.InternalServerError(w, err)
-		return
-	}
-	if usernameExists {
-		usernameExistsError := validate.NewErrors()
-		usernameExistsError.Add("username", "exists")
-		response.FailedValidation(w, usernameExistsError)
-		return
-	}
-
-	user := models.AppUser{
+	user := models.User{
 		Username: usernameInput.Username,
 		RegistrationStart: null.Time{
 			Time:  time.Now(),
@@ -52,64 +39,78 @@ func (app *application) registrationStart(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	webAuthnUser := toWebAuthnUser(&user)
+	rnd := make([]byte, 64)
+	if _, err := rand.Read(rnd); err != nil {
+		response.InternalServerError(w, err)
+		return
+	}
+	webAuthnUser := &WebAuthnUser{
+		username: user.Username,
+		id:       rnd,
+	}
 
+	requireResidentKey := true
 	options, sessionData, err := app.webAuthn.BeginRegistration(webAuthnUser, webauthn.WithAuthenticatorSelection(protocol.AuthenticatorSelection{
-		ResidentKey:      protocol.ResidentKeyRequirementRequired,
-		UserVerification: protocol.VerificationPreferred,
-	}))
+		ResidentKey:        protocol.ResidentKeyRequirementRequired,
+		RequireResidentKey: &requireResidentKey,
+		UserVerification:   protocol.VerificationPreferred,
+	}), webauthn.WithConveyancePreference(protocol.PreferNoAttestation),
+		webauthn.WithExclusions([]protocol.CredentialDescriptor{}),
+		webauthn.WithExtensions(protocol.AuthenticationExtensions{"credProps": true}),
+	)
+
 	if err != nil {
 		response.InternalServerError(w, err)
 		return
 	}
 
 	app.sessionManager.Put(r.Context(), registrationSessionDataKey, sessionData)
-	response.JSON(w, http.StatusOK, options)
+	app.sessionManager.Put(r.Context(), registrationSessionUserId, user.ID)
+
+	response.JSON(w, http.StatusOK, options.Response)
 }
 
 func (app *application) registrationFinish(w http.ResponseWriter, r *http.Request) {
 	tx := r.Context().Value(transactionKey).(*sql.Tx)
 
-	sessionData, ok := app.sessionManager.Get(r.Context(), registrationSessionDataKey).(webauthn.SessionData)
+	options, ok := app.sessionManager.Get(r.Context(), registrationSessionDataKey).(webauthn.SessionData)
 	if !ok {
 		err := fmt.Errorf("webAuthn session data not found")
 		response.InternalServerError(w, err)
 		return
 	}
-
-	userID := bytesToInt64(sessionData.UserID)
-	user, err := models.FindAppUser(r.Context(), tx, userID)
-	if err != nil {
-		response.InternalServerError(w, err)
-		return
-	}
-	webAuthnUser := toWebAuthnUser(user)
-
-	credential, err := app.webAuthn.FinishRegistration(webAuthnUser, sessionData, r)
-	if err != nil {
+	userId, ok := app.sessionManager.Get(r.Context(), registrationSessionUserId).(int)
+	if !ok {
+		err := fmt.Errorf("webAuthn session user id not found")
 		response.InternalServerError(w, err)
 		return
 	}
 
-	var transportStrings []string
-	for _, transport := range credential.Transport {
-		transportStrings = append(transportStrings, string(transport))
+	user, err := models.FindUser(r.Context(), tx, userId)
+	if err != nil {
+		response.InternalServerError(w, err)
+		return
 	}
-	transports := strings.Join(transportStrings, ",")
+	webAuthnUser := &WebAuthnUser{
+		username: user.Username,
+		id:       options.UserID,
+	}
 
-	appCredential := models.AppCredential{
-		ID:        credential.ID,
-		AppUserID: user.ID,
-		PublicKey: credential.PublicKey,
-		AttestationType: null.String{
-			String: credential.AttestationType,
-			Valid:  credential.AttestationType != "",
-		},
-		AaGUID:    credential.Authenticator.AAGUID,
-		SignCount: int(credential.Authenticator.SignCount),
-		Transports: null.String{
-			String: transports,
-			Valid:  transports != "",
+	credential, err := app.webAuthn.FinishRegistration(webAuthnUser, options, r)
+	if err != nil {
+		response.InternalServerError(w, err)
+		return
+	}
+
+	appCredential := models.Credential{
+		CredID:         credential.ID,
+		CredPublicKey:  credential.PublicKey,
+		UserID:         user.ID,
+		WebauthnUserID: options.UserID,
+		Counter:        int(credential.Authenticator.SignCount),
+		LastUsed: null.Time{
+			Time:  time.Now(),
+			Valid: true,
 		},
 	}
 	if err := appCredential.Insert(r.Context(), tx, boil.Infer()); err != nil {
@@ -117,13 +118,14 @@ func (app *application) registrationFinish(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	err = models.AppUsers(models.AppUserWhere.ID.EQ(user.ID)).
-		UpdateAll(r.Context(), tx, models.M{models.AppUserColumns.RegistrationStart: null.Time{Valid: false}})
+	err = models.Users(models.UserWhere.ID.EQ(user.ID)).
+		UpdateAll(r.Context(), tx, models.M{models.UserColumns.RegistrationStart: null.Time{Valid: false}})
 	if err != nil {
 		response.InternalServerError(w, err)
 		return
 	}
 
 	app.sessionManager.Remove(r.Context(), registrationSessionDataKey)
+	app.sessionManager.Remove(r.Context(), registrationSessionUserId)
 	w.WriteHeader(http.StatusOK)
 }

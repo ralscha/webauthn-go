@@ -6,7 +6,7 @@ import (
 )
 
 func (app *application) authenticateHandler(w http.ResponseWriter, r *http.Request) {
-	userID := app.sessionManager.GetInt64(r.Context(), "userID")
+	userID := app.sessionManager.GetInt(r.Context(), "userID")
 	if userID > 0 {
 		w.WriteHeader(http.StatusNoContent)
 	} else {

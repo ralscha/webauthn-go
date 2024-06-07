@@ -10,9 +10,8 @@ import (
 
 func (app *application) authenticatedOnly(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		value := app.sessionManager.Get(r.Context(), "userID")
-		userID, ok := value.(int64)
-		if ok && userID > 0 {
+		userID := app.sessionManager.GetInt(r.Context(), "userID")
+		if userID > 0 {
 			next.ServeHTTP(w, r)
 		} else {
 			response.Forbidden(w)

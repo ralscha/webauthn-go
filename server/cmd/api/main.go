@@ -9,8 +9,8 @@ import (
 	"github.com/alexedwards/scs/v2"
 	"github.com/go-webauthn/webauthn/webauthn"
 	"github.com/volatiletech/sqlboiler/v4/boil"
-	"golang.org/x/exp/slog"
 	"log"
+	"log/slog"
 	"net/http"
 	"os"
 	"sync"
@@ -50,7 +50,7 @@ func main() {
 
 	db, err := database.New(cfg)
 	if err != nil {
-		slog.Error("opening database connection failed", err)
+		slog.Error("opening database connection failed", "error", err)
 		os.Exit(1)
 	}
 	defer func(db *sql.DB) {
@@ -61,12 +61,12 @@ func main() {
 
 	sm := scs.New()
 	sm.Store = postgresstore.NewWithCleanupInterval(db, 30*time.Minute)
-	sm.Lifetime = cfg.SessionLifetime
+	sm.Lifetime = cfg.Session.Lifetime
 	sm.Cookie.SameSite = http.SameSiteStrictMode
-	if cfg.CookieDomain != "" {
-		sm.Cookie.Domain = cfg.CookieDomain
+	if cfg.Session.CookieDomain != "" {
+		sm.Cookie.Domain = cfg.Session.CookieDomain
 	}
-	sm.Cookie.Secure = cfg.SecureCookie
+	sm.Cookie.Secure = cfg.Session.SecureCookie
 	slog.Info("secure cookie", "secure", sm.Cookie.Secure)
 
 	wa, err := webauthn.New(&webauthn.Config{
@@ -75,7 +75,7 @@ func main() {
 		RPOrigins:     []string{cfg.WebAuthn.RPOrigins},
 	})
 	if err != nil {
-		slog.Error("initializing webauthn failed", err)
+		slog.Error("initializing webauthn failed", "error", err)
 		os.Exit(1)
 	}
 
@@ -92,13 +92,13 @@ func main() {
 	}, 20*time.Minute)
 
 	if err != nil {
-		slog.Error("scheduling cleanup task failed", err)
+		slog.Error("scheduling cleanup task failed", "error", err)
 		os.Exit(1)
 	}
 
 	err = app.serve()
 	if err != nil {
-		slog.Error("http serve failed", err)
+		slog.Error("http serve failed", "error", err)
 		os.Exit(1)
 	}
 }

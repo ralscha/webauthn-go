@@ -1,11 +1,13 @@
 package main
 
 import (
+	"context"
 	"flag"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/pressly/goose/v3"
 	"log"
 	"os"
+	"time"
 	"webauthn.rasc.ch/internal/config"
 	"webauthn.rasc.ch/migrations"
 )
@@ -48,7 +50,9 @@ func main() {
 
 	goose.SetBaseFS(migrations.EmbeddedFiles)
 
-	if err := goose.Run(command, db, ".", arguments...); err != nil {
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
+	defer cancel()
+	if err := goose.RunContext(ctx, command, db, ".", arguments...); err != nil {
 		log.Fatalf("goose %v: %v", command, err)
 	}
 }

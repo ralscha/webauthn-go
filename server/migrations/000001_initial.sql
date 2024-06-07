@@ -1,23 +1,26 @@
 -- +goose Up
-CREATE TABLE app_user
+CREATE TABLE users
 (
-    id            BIGSERIAL PRIMARY KEY,
-    username      VARCHAR(255) UNIQUE NOT NULL,
-    registration_start TIMESTAMPTZ         NULL
+    id                 SERIAL PRIMARY KEY,
+    username           VARCHAR   NOT NULL,
+    registration_start TIMESTAMP NULL,
+    created_at         TIMESTAMP DEFAULT now()
 );
 
-CREATE TABLE app_credentials
+CREATE TABLE credentials
 (
-    id          BYTEA  NOT NULL,
-    app_user_id BIGINT NOT NULL,
-    public_key  BYTEA  NOT NULL,
-    attestation_type VARCHAR(50) NULL,
-    transports VARCHAR(255) NULL,
-    aa_guid BYTEA NOT NULL,
-    sign_count INTEGER NOT NULL,
-    PRIMARY KEY (id, app_user_id),
-    FOREIGN KEY (app_user_id) REFERENCES app_user (id) ON DELETE CASCADE
+    cred_id          BYTEA PRIMARY KEY,
+    cred_public_key  BYTEA        NOT NULL,
+    user_id          INTEGER      NOT NULL,
+    webauthn_user_id BYTEA UNIQUE NOT NULL,
+    counter          INTEGER      NOT NULL,
+    created_at       TIMESTAMP DEFAULT now(),
+    last_used        TIMESTAMP,
+
+    UNIQUE (webauthn_user_id, user_id),
+    CONSTRAINT fk_internal_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
 );
+
 
 CREATE TABLE sessions
 (
@@ -31,5 +34,5 @@ CREATE INDEX sessions_expiry_idx ON sessions (expiry);
 
 -- +goose Down
 DROP TABLE sessions;
-DROP TABLE app_credentials;
-DROP TABLE app_user;
+DROP TABLE credentials;
+DROP TABLE users;

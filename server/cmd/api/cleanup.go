@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 	"github.com/volatiletech/null/v8"
-	"golang.org/x/exp/slog"
+	"log/slog"
 	"time"
 	"webauthn.rasc.ch/internal/models"
 )
@@ -14,11 +14,11 @@ func (app *application) cleanup() {
 
 	// Delete all users with a pending registration older than 10 minutes
 	tenMinutesAgo := time.Now().Add(-10 * time.Minute)
-	err := models.AppUsers(models.AppUserWhere.RegistrationStart.LT(null.Time{
+	err := models.Users(models.UserWhere.RegistrationStart.LT(null.Time{
 		Time:  tenMinutesAgo,
 		Valid: true,
 	})).DeleteAll(ctx, app.database)
 	if err != nil {
-		slog.Error("error deleting old pending sign ups", err)
+		slog.Error("error deleting old pending sign ups", "error", err)
 	}
 }

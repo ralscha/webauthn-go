@@ -1,6 +1,6 @@
 import {inject, NgModule} from '@angular/core';
 import {PreloadAllModules, Router, RouterModule, Routes} from '@angular/router';
-import {LoginPage} from './login/login.page';
+import {AuthenticationPage} from './authentication/authentication.page';
 import {AuthService} from "./auth.service";
 import {map} from "rxjs/operators";
 
@@ -26,7 +26,7 @@ const routes: Routes = [
     canActivate: [() => authGuard()],
     loadChildren: () => import('./home/home.module').then(m => m.HomePageModule)
   },
-  {path: 'login', component: LoginPage},
+  {path: 'login', component: AuthenticationPage},
   {
     path: 'registration',
     loadChildren: () => import('./registration/registration.module').then(m => m.RegistrationModule)

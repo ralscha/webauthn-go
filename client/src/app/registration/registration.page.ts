@@ -1,25 +1,19 @@
 import {Component} from '@angular/core';
-import {NavController} from '@ionic/angular';
-import {HttpClient} from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import {MessagesService} from '../messages.service';
-import {
-  create,
-  CredentialCreationOptionsJSON,
-  parseCreationOptionsFromJSON
-} from "@github/webauthn-json/browser-ponyfill";
 import {environment} from '../../environments/environment';
 import {Errors, UsernameInput} from "../api/types";
 import {NgForm, NgModel} from "@angular/forms";
 import {displayFieldErrors} from "../util";
 import {Router} from "@angular/router";
-
+import { startRegistration,  } from '@simplewebauthn/browser';
+import {PublicKeyCredentialCreationOptionsJSON, RegistrationResponseJSON} from "@simplewebauthn/types";
 @Component({
   selector: 'app-registration',
   templateUrl: './registration.page.html'
 })
 export class RegistrationPage {
-  constructor(private readonly navCtrl: NavController,
-              private readonly router: Router,
+  constructor(private readonly router: Router,
               private readonly messagesService: MessagesService,
               private readonly httpClient: HttpClient) {
   }
@@ -34,7 +28,7 @@ export class RegistrationPage {
 
     const userNameInput: UsernameInput = {username};
 
-    this.httpClient.post<CredentialCreationOptionsJSON>(`${environment.API_URL}/registration/start`, userNameInput)
+    this.httpClient.post<PublicKeyCredentialCreationOptionsJSON>(`${environment.API_URL}/registration/start`, userNameInput)
       .subscribe({
         next: async (response) => {
           await loading.dismiss();
@@ -61,10 +55,10 @@ export class RegistrationPage {
     return null;
   }
 
-  private async handleSignUpStartResponse(response: CredentialCreationOptionsJSON): Promise<void> {
-    let credential: object | null = null;
+  private async handleSignUpStartResponse(creationOptions:  PublicKeyCredentialCreationOptionsJSON): Promise<void> {
+    let registrationResponse: RegistrationResponseJSON | null = null;
     try {
-      credential = await create(parseCreationOptionsFromJSON(response));
+      registrationResponse = await startRegistration(creationOptions)
     } catch (e) {
       await this.messagesService.showErrorToast('Registration failed with error ' + e);
       return;
@@ -72,7 +66,7 @@ export class RegistrationPage {
     const loading = await this.messagesService.showLoading('Finishing registration process...');
     await loading.present();
 
-    this.httpClient.post(`${environment.API_URL}/registration/finish`, credential)
+    this.httpClient.post(`${environment.API_URL}/registration/finish`, registrationResponse)
       .subscribe({
         next: () => {
           loading.dismiss();

@@ -6,27 +6,30 @@ import (
 	"fmt"
 	"github.com/go-webauthn/webauthn/protocol"
 	"github.com/go-webauthn/webauthn/webauthn"
+	"github.com/volatiletech/null/v8"
+	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 	"net/http"
+	"time"
 	"webauthn.rasc.ch/internal/models"
 	"webauthn.rasc.ch/internal/response"
 )
 
-const loginSessionDataKey = "webAuthnLoginSessionData"
+const authenticationSessionDataKey = "webAuthnAuthenticationSessionData"
 
-func (app *application) loginStart(w http.ResponseWriter, r *http.Request) {
+func (app *application) authenticationStart(w http.ResponseWriter, r *http.Request) {
 	options, sessionData, err := app.webAuthn.BeginDiscoverableLogin(webauthn.WithUserVerification(protocol.VerificationPreferred))
 	if err != nil {
 		response.InternalServerError(w, err)
 		return
 	}
 
-	app.sessionManager.Put(r.Context(), loginSessionDataKey, sessionData)
-	response.JSON(w, http.StatusOK, options)
+	app.sessionManager.Put(r.Context(), authenticationSessionDataKey, sessionData)
+	response.JSON(w, http.StatusOK, options.Response)
 }
 
-func (app *application) loginFinish(w http.ResponseWriter, r *http.Request) {
+func (app *application) authenticationFinish(w http.ResponseWriter, r *http.Request) {
 	tx := r.Context().Value(transactionKey).(*sql.Tx)
-	sessionData, ok := app.sessionManager.Get(r.Context(), loginSessionDataKey).(webauthn.SessionData)
+	sessionData, ok := app.sessionManager.Get(r.Context(), authenticationSessionDataKey).(webauthn.SessionData)
 	if !ok {
 		err := fmt.Errorf("webAuthn session data not found")
 		response.InternalServerError(w, err)
@@ -49,36 +52,39 @@ func (app *application) loginFinish(w http.ResponseWriter, r *http.Request) {
 		response.InternalServerError(w, fmt.Errorf("authenticator may be cloned"))
 		return
 	}
-	userID := bytesToInt64(parsedResponse.Response.UserHandle)
 
-	err = models.AppCredentials(
-		models.AppCredentialWhere.AppUserID.EQ(userID),
-		models.AppCredentialWhere.ID.EQ(credential.ID),
+	err = models.Credentials(
+		models.CredentialWhere.WebauthnUserID.EQ(parsedResponse.Response.UserHandle),
+		models.CredentialWhere.CredID.EQ(credential.ID),
 	).
 		UpdateAll(r.Context(), tx,
-			models.M{models.AppCredentialColumns.SignCount: credential.Authenticator.SignCount},
-		)
+			models.M{models.CredentialColumns.Counter: credential.Authenticator.SignCount,
+				models.CredentialColumns.LastUsed: null.Time{
+					Time:  time.Now(),
+					Valid: true,
+				}})
 	if err != nil {
 		response.InternalServerError(w, err)
 		return
 	}
 
-	app.sessionManager.Remove(r.Context(), loginSessionDataKey)
-	app.sessionManager.Put(r.Context(), "userID", userID)
+	app.sessionManager.Remove(r.Context(), authenticationSessionDataKey)
+
+	user, err := models.Credentials(models.CredentialWhere.CredID.EQ(credential.ID), qm.Select(models.CredentialColumns.UserID)).One(r.Context(), tx)
+	if err != nil {
+		response.InternalServerError(w, err)
+		return
+	}
+	app.sessionManager.Put(r.Context(), "userID", user.UserID)
 	w.WriteHeader(http.StatusOK)
 }
 
 func (app *application) createDiscovarableUserHandler(ctx context.Context, tx *sql.Tx) webauthn.DiscoverableUserHandler {
 	return func(rawID, userHandle []byte) (webauthn.User, error) {
-		userID := bytesToInt64(userHandle)
-		user, err := models.FindAppUser(ctx, tx, userID)
+		credential, err := models.Credentials(models.CredentialWhere.WebauthnUserID.EQ(userHandle)).One(ctx, tx)
 		if err != nil {
 			return nil, err
 		}
-		allUserCredentials, err := models.AppCredentials(models.AppCredentialWhere.AppUserID.EQ(user.ID)).All(ctx, tx)
-		if err != nil {
-			return nil, err
-		}
-		return toWebAuthnUserWithCredentials(user, allUserCredentials)
+		return toWebAuthnUserWithCredentials(credential)
 	}
 }

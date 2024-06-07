@@ -1,0 +1,18 @@
+environment: development
+
+db:
+  user: postgres
+  password: password
+  database: webauthn
+  host: 127.0.0.1:5432
+
+http:
+  addr: localhost:8080
+
+session:
+  secureCookie: false
+
+webauthn:
+  rpId: localhost
+  rpDisplayName: WebAuthn Example Application
+  rpOrigins: http://localhost:8100

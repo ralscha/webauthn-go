@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 	"errors"
-	"golang.org/x/exp/slog"
+	"log/slog"
 	"net/http"
 	"os"
 	"os/signal"
@@ -13,7 +13,7 @@ import (
 
 func (app *application) serve() error {
 	srv := &http.Server{
-		Addr:         app.config.HTTP.Port,
+		Addr:         app.config.HTTP.Addr,
 		Handler:      app.routes(),
 		ReadTimeout:  time.Duration(app.config.HTTP.ReadTimeoutInSeconds) * time.Second,
 		WriteTimeout: time.Duration(app.config.HTTP.WriteTimeoutInSeconds) * time.Second,
@@ -62,9 +62,9 @@ func (app *application) backgroundTask(fn func()) {
 		defer func() {
 			if err := recover(); err != nil {
 				if e, ok := err.(error); ok {
-					slog.Error("background job failed", e)
+					slog.Error("background job failed", "error", e)
 				} else {
-					slog.Error("background job failed", nil, err)
+					slog.Error("background job failed", "error", err)
 				}
 			}
 		}()
