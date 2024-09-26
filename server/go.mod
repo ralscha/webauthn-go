@@ -12,7 +12,7 @@ require (
 	github.com/go-webauthn/webauthn v0.11.2
 	github.com/gobuffalo/validate v2.0.4+incompatible
 	github.com/jackc/pgx/v5 v5.7.1
-	github.com/pressly/goose/v3 v3.22.0
+	github.com/pressly/goose/v3 v3.22.1
 	github.com/spf13/viper v1.19.0
 	github.com/tkrajina/typescriptify-golang-structs v0.1.11
 	github.com/volatiletech/null/v8 v8.1.2
