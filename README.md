@@ -1,10 +1,3 @@
 # WebAuthn demo with Go
 
-Passkey Support
-https://passkeys.dev/device-support/
-
-
-https://github.com/go-webauthn/webauthn
-
-https://simplewebauthn.dev/docs/packages/server
-https://developers.google.com/identity/passkeys/developer-guides/server-registration
+Code for blog post: https://golb.hplar.ch/2024/09/webauthn_go.html
