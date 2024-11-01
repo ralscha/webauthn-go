@@ -17,12 +17,12 @@ require (
 	github.com/tkrajina/typescriptify-golang-structs v0.2.0
 	github.com/volatiletech/null/v8 v8.1.2
 	github.com/volatiletech/sqlboiler/v4 v4.16.2
-	github.com/volatiletech/strmangle v0.0.7
+	github.com/volatiletech/strmangle v0.0.8
 )
 
 require (
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
-	github.com/fsnotify/fsnotify v1.7.0 // indirect
+	github.com/fsnotify/fsnotify v1.8.0 // indirect
 	github.com/fxamacker/cbor/v2 v2.7.0 // indirect
 	github.com/go-webauthn/x v0.1.15 // indirect
 	github.com/gofrs/uuid v4.4.0+incompatible // indirect
