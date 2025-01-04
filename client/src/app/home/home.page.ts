@@ -6,8 +6,9 @@ import {environment} from '../../environments/environment';
 import {SecretOutput} from "../api/types";
 
 @Component({
-  selector: 'app-home',
-  templateUrl: './home.page.html'
+    selector: 'app-home',
+    templateUrl: './home.page.html',
+    standalone: false
 })
 export class HomePage implements OnInit {
   secretMessage: string | null = null;

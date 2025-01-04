@@ -3,11 +3,15 @@ import {NavController} from '@ionic/angular';
 import {MessagesService} from '../messages.service';
 import { HttpClient } from '@angular/common/http';
 import {environment} from '../../environments/environment';
-import { startAuthentication } from '@simplewebauthn/browser';
-import {AuthenticationResponseJSON, PublicKeyCredentialRequestOptionsJSON} from "@simplewebauthn/types";
+import {
+  AuthenticationResponseJSON,
+  PublicKeyCredentialRequestOptionsJSON,
+  startAuthentication
+} from '@simplewebauthn/browser';
 @Component({
-  selector: 'app-authentication',
-  templateUrl: './authentication.page.html'
+    selector: 'app-authentication',
+    templateUrl: './authentication.page.html',
+    standalone: false
 })
 export class AuthenticationPage {
 
@@ -33,10 +37,10 @@ export class AuthenticationPage {
       });
   }
 
-  private async handleLoginStartResponse(response: PublicKeyCredentialRequestOptionsJSON): Promise<void> {
+  private async handleLoginStartResponse(optionsJSON: PublicKeyCredentialRequestOptionsJSON): Promise<void> {
     let authenticationResponse: AuthenticationResponseJSON | null = null;
     try {
-      authenticationResponse = await startAuthentication(response);
+      authenticationResponse = await startAuthentication({optionsJSON});
     } catch (e) {
       await this.messagesService.showErrorToast('Login failed with error ' + e);
       return;

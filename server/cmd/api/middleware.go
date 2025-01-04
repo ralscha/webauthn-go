@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"net/http"
 	"webauthn.rasc.ch/internal/response"
@@ -39,24 +38,6 @@ func (app *application) rwTransaction(next http.Handler) http.Handler {
 
 		if err := tx.Commit(); err != nil {
 			fmt.Println("Rolling back transaction")
-			response.InternalServerError(w, err)
-			return
-		}
-	})
-}
-
-func (app *application) readonlyTransaction(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		tx, err := app.database.BeginTx(r.Context(), &sql.TxOptions{ReadOnly: true})
-		if err != nil {
-			response.InternalServerError(w, err)
-			return
-		}
-
-		ctx := context.WithValue(r.Context(), transactionKey, tx)
-		next.ServeHTTP(w, r.WithContext(ctx))
-
-		if err := tx.Rollback(); err != nil {
 			response.InternalServerError(w, err)
 			return
 		}

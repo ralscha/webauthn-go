@@ -53,22 +53,3 @@ func (app *application) serve() error {
 	app.wg.Wait()
 	return nil
 }
-
-func (app *application) backgroundTask(fn func()) {
-	app.wg.Add(1)
-
-	go func() {
-		defer app.wg.Done()
-		defer func() {
-			if err := recover(); err != nil {
-				if e, ok := err.(error); ok {
-					slog.Error("background job failed", "error", e)
-				} else {
-					slog.Error("background job failed", "error", err)
-				}
-			}
-		}()
-
-		fn()
-	}()
-}

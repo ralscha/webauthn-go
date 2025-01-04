@@ -102,16 +102,39 @@ func (app *application) registrationFinish(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
+	transports := ""
+	for i, t := range credential.Transport {
+		if i > 0 {
+			transports += ","
+		}
+		transports += string(t)
+	}
+
 	appCredential := models.Credential{
 		CredID:         credential.ID,
-		CredPublicKey:  credential.PublicKey,
 		UserID:         user.ID,
 		WebauthnUserID: options.UserID,
-		Counter:        int(credential.Authenticator.SignCount),
 		LastUsed: null.Time{
 			Time:  time.Now(),
 			Valid: true,
 		},
+		Aaguid: null.Bytes{
+			Bytes: credential.Authenticator.AAGUID,
+			Valid: len(credential.Authenticator.AAGUID) > 0,
+		},
+		AttestationType: null.String{
+			String: credential.AttestationType,
+			Valid:  credential.AttestationType != "",
+		},
+		Attachment:     string(credential.Authenticator.Attachment),
+		Transport:      transports,
+		SignCount:      int(credential.Authenticator.SignCount),
+		CloneWarning:   credential.Authenticator.CloneWarning,
+		Present:        credential.Flags.UserPresent,
+		Verified:       credential.Flags.UserVerified,
+		BackupEligible: credential.Flags.BackupEligible,
+		BackupState:    credential.Flags.BackupState,
+		PublicKey:      credential.PublicKey,
 	}
 	if err := appCredential.Insert(r.Context(), tx, boil.Infer()); err != nil {
 		response.InternalServerError(w, err)

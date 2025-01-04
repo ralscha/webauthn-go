@@ -1,7 +1,9 @@
 package main
 
 import (
+	"github.com/go-webauthn/webauthn/protocol"
 	"github.com/go-webauthn/webauthn/webauthn"
+	"strings"
 	"webauthn.rasc.ch/internal/models"
 )
 
@@ -32,12 +34,35 @@ func (u *WebAuthnUser) WebAuthnCredentials() []webauthn.Credential {
 }
 
 func toWebAuthnUserWithCredentials(credential *models.Credential) (*WebAuthnUser, error) {
+	attestationType := ""
+	if credential.AttestationType.Valid {
+		attestationType = credential.AttestationType.String
+	}
+
+	var transports []protocol.AuthenticatorTransport
+	splitted := strings.Split(credential.Transport, ",")
+	for _, s := range splitted {
+		transports = append(transports, protocol.AuthenticatorTransport(s))
+	}
+
 	webAuthnCredential := webauthn.Credential{
-		ID:        credential.CredID,
-		PublicKey: credential.CredPublicKey,
-		Authenticator: webauthn.Authenticator{
-			SignCount: uint32(credential.Counter),
+		ID:              credential.CredID,
+		PublicKey:       credential.PublicKey,
+		AttestationType: attestationType,
+		Transport:       transports,
+		Flags: webauthn.CredentialFlags{
+			UserPresent:    credential.Present,
+			UserVerified:   credential.Verified,
+			BackupEligible: credential.BackupEligible,
+			BackupState:    credential.BackupState,
 		},
+		Authenticator: webauthn.Authenticator{
+			AAGUID:       credential.Aaguid.Bytes,
+			SignCount:    uint32(credential.SignCount),
+			CloneWarning: credential.CloneWarning,
+			Attachment:   protocol.AuthenticatorAttachment(credential.Attachment),
+		},
+		Attestation: webauthn.CredentialAttestation{},
 	}
 
 	return &WebAuthnUser{

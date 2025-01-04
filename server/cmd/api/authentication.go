@@ -53,16 +53,23 @@ func (app *application) authenticationFinish(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
+	cols := models.M{
+		models.CredentialColumns.SignCount:    credential.Authenticator.SignCount,
+		models.CredentialColumns.CloneWarning: credential.Authenticator.CloneWarning,
+		models.CredentialColumns.LastUsed: null.Time{
+			Time:  time.Now(),
+			Valid: true,
+		},
+	}
+	if credential.Flags.BackupEligible {
+		cols[models.CredentialColumns.BackupState] = credential.Flags.BackupState
+	}
+
 	err = models.Credentials(
 		models.CredentialWhere.WebauthnUserID.EQ(parsedResponse.Response.UserHandle),
 		models.CredentialWhere.CredID.EQ(credential.ID),
 	).
-		UpdateAll(r.Context(), tx,
-			models.M{models.CredentialColumns.Counter: credential.Authenticator.SignCount,
-				models.CredentialColumns.LastUsed: null.Time{
-					Time:  time.Now(),
-					Valid: true,
-				}})
+		UpdateAll(r.Context(), tx, cols)
 	if err != nil {
 		response.InternalServerError(w, err)
 		return

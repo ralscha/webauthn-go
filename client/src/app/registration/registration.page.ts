@@ -6,11 +6,15 @@ import {Errors, UsernameInput} from "../api/types";
 import {NgForm, NgModel} from "@angular/forms";
 import {displayFieldErrors} from "../util";
 import {Router} from "@angular/router";
-import { startRegistration,  } from '@simplewebauthn/browser';
-import {PublicKeyCredentialCreationOptionsJSON, RegistrationResponseJSON} from "@simplewebauthn/types";
+import {
+  PublicKeyCredentialCreationOptionsJSON,
+  RegistrationResponseJSON,
+  startRegistration,
+} from '@simplewebauthn/browser';
 @Component({
-  selector: 'app-registration',
-  templateUrl: './registration.page.html'
+    selector: 'app-registration',
+    templateUrl: './registration.page.html',
+    standalone: false
 })
 export class RegistrationPage {
   constructor(private readonly router: Router,
@@ -55,10 +59,10 @@ export class RegistrationPage {
     return null;
   }
 
-  private async handleSignUpStartResponse(creationOptions:  PublicKeyCredentialCreationOptionsJSON): Promise<void> {
+  private async handleSignUpStartResponse(optionsJSON:  PublicKeyCredentialCreationOptionsJSON): Promise<void> {
     let registrationResponse: RegistrationResponseJSON | null = null;
     try {
-      registrationResponse = await startRegistration(creationOptions)
+      registrationResponse = await startRegistration({optionsJSON})
     } catch (e) {
       await this.messagesService.showErrorToast('Registration failed with error ' + e);
       return;
