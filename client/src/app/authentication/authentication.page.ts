@@ -1,30 +1,41 @@
-import {Component} from '@angular/core';
+import {Component, inject} from '@angular/core';
 import {NavController} from '@ionic/angular';
 import {MessagesService} from '../messages.service';
-import { HttpClient } from '@angular/common/http';
+import {HttpClient} from '@angular/common/http';
 import {environment} from '../../environments/environment';
 import {
   AuthenticationResponseJSON,
   PublicKeyCredentialRequestOptionsJSON,
   startAuthentication
 } from '@simplewebauthn/browser';
+import {RouterLink} from '@angular/router';
+import {
+  IonButton,
+  IonCol,
+  IonContent,
+  IonGrid,
+  IonHeader,
+  IonRouterLink,
+  IonRow,
+  IonTitle,
+  IonToolbar
+} from "@ionic/angular/standalone";
+
 @Component({
-    selector: 'app-authentication',
-    templateUrl: './authentication.page.html',
-    standalone: false
+  selector: 'app-authentication',
+  templateUrl: './authentication.page.html',
+  imports: [RouterLink, IonRouterLink, IonHeader, IonToolbar, IonTitle, IonContent, IonGrid, IonRow, IonCol, IonButton]
 })
 export class AuthenticationPage {
-
-  constructor(private readonly navCtrl: NavController,
-              private readonly httpClient: HttpClient,
-              private readonly messagesService: MessagesService) {
-  }
+  readonly #navCtrl = inject(NavController);
+  readonly #httpClient = inject(HttpClient);
+  readonly #messagesService = inject(MessagesService);
 
   async login(): Promise<void> {
-    const loading = await this.messagesService.showLoading('Starting login ...');
+    const loading = await this.#messagesService.showLoading('Starting login ...');
     await loading.present();
 
-    this.httpClient.post<PublicKeyCredentialRequestOptionsJSON>(`${environment.API_URL}/authentication/start`, null)
+    this.#httpClient.post<PublicKeyCredentialRequestOptionsJSON>(`${environment.API_URL}/authentication/start`, null)
       .subscribe({
         next: response => {
           loading.dismiss();
@@ -32,7 +43,7 @@ export class AuthenticationPage {
         },
         error: () => {
           loading.dismiss();
-          this.messagesService.showErrorToast('Login failed');
+          this.#messagesService.showErrorToast('Login failed');
         }
       });
   }
@@ -42,20 +53,20 @@ export class AuthenticationPage {
     try {
       authenticationResponse = await startAuthentication({optionsJSON});
     } catch (e) {
-      await this.messagesService.showErrorToast('Login failed with error ' + e);
+      await this.#messagesService.showErrorToast('Login failed with error ' + e);
       return;
     }
-    const loading = await this.messagesService.showLoading('Validating ...');
+    const loading = await this.#messagesService.showLoading('Validating ...');
     await loading.present();
 
-    this.httpClient.post<void>(`${environment.API_URL}/authentication/finish`, authenticationResponse).subscribe({
+    this.#httpClient.post<void>(`${environment.API_URL}/authentication/finish`, authenticationResponse).subscribe({
       next: () => {
         loading.dismiss();
-        this.navCtrl.navigateRoot('/home', {replaceUrl: true});
+        this.#navCtrl.navigateRoot('/home', {replaceUrl: true});
       },
       error: () => {
         loading.dismiss();
-        this.messagesService.showErrorToast('Login failed');
+        this.#messagesService.showErrorToast('Login failed');
       }
     });
   }
