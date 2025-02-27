@@ -9,7 +9,7 @@ require (
 	github.com/friendsofgo/errors v0.9.2
 	github.com/go-chi/chi/v5 v5.2.1
 	github.com/go-chi/httprate v0.14.1
-	github.com/go-webauthn/webauthn v0.11.2
+	github.com/go-webauthn/webauthn v0.12.1
 	github.com/gobuffalo/validate v2.0.4+incompatible
 	github.com/jackc/pgx/v5 v5.7.2
 	github.com/pressly/goose/v3 v3.24.1
@@ -24,7 +24,7 @@ require (
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/fsnotify/fsnotify v1.8.0 // indirect
 	github.com/fxamacker/cbor/v2 v2.7.0 // indirect
-	github.com/go-webauthn/x v0.1.16 // indirect
+	github.com/go-webauthn/x v0.1.18 // indirect
 	github.com/gofrs/uuid v4.4.0+incompatible // indirect
 	github.com/golang-jwt/jwt/v5 v5.2.1 // indirect
 	github.com/google/go-tpm v0.9.3 // indirect
@@ -53,8 +53,8 @@ require (
 	github.com/volatiletech/randomize v0.0.1 // indirect
 	github.com/x448/float16 v0.8.4 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
-	golang.org/x/crypto v0.33.0 // indirect
-	golang.org/x/exp v0.0.0-20250210185358-939b2ce775ac // indirect
+	golang.org/x/crypto v0.35.0 // indirect
+	golang.org/x/exp v0.0.0-20250218142911-aa4b98e5adaa // indirect
 	golang.org/x/sync v0.11.0 // indirect
 	golang.org/x/sys v0.30.0 // indirect
 	golang.org/x/text v0.22.0 // indirect
