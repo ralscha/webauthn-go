@@ -166,10 +166,10 @@ github.com/go-logfmt/logfmt v0.5.0/go.mod h1:wCYkCAKZfumFQihp8CzCvQ3paCTfi41vtzG
 github.com/go-sql-driver/mysql v1.6.0/go.mod h1:DCzpHaOWr8IXmIStZouvnhqoel9Qv2LBy8hT2VhHyBg=
 github.com/go-stack/stack v1.8.0/go.mod h1:v0f6uXyyMGvRgIKkXu+yp6POWl0qKG85gN/melR3HDY=
 github.com/go-task/slim-sprig v0.0.0-20210107165309-348f09dbbbc0/go.mod h1:fyg7847qk6SyHyPtNmDHnmrv/HOrqktSC+C9fM+CJOE=
-github.com/go-webauthn/webauthn v0.12.1 h1:fQNKWc+gd7i1TW8FmlB0jQTHyc2GYYlV/QdLUxo+MSA=
-github.com/go-webauthn/webauthn v0.12.1/go.mod h1:Q13xKHZi459wU8IoFjm8jQ6CMRyad+kegblwMFFhQGU=
-github.com/go-webauthn/x v0.1.18 h1:9xxiKRKCHx/1R2RF+4xb1qY5QDIO0RlTmH5L02lmRH4=
-github.com/go-webauthn/x v0.1.18/go.mod h1:Q/uHdGGFrZ7psEcoEStYunurZuG3Z9UDZJetM8qDTtA=
+github.com/go-webauthn/webauthn v0.12.2 h1:yLaNPgBUEXDQtWnOjhsGhMMCEWbXwjg/aNkC8riJQI8=
+github.com/go-webauthn/webauthn v0.12.2/go.mod h1:Q8SZPPj4sZ469fNTcQXxRpzJOdb30jQrn/36FX8jilA=
+github.com/go-webauthn/x v0.1.19 h1:IUfdHiBRoTdujpBA/14qbrMXQ3LGzYe/PRGWdZcmudg=
+github.com/go-webauthn/x v0.1.19/go.mod h1:C5arLuTQ3pVHKPw89v7CDGnqAZSZJj+4Jnr40dsn7tk=
 github.com/gobuffalo/validate v2.0.4+incompatible h1:ZTxozrIw8qQ5nfhShmc4izjYPTsPhfdXTdhXOd5OS9o=
 github.com/gobuffalo/validate v2.0.4+incompatible/go.mod h1:N+EtDe0J8252BgfzQUChBgfd6L93m9weay53EWFVsMM=
 github.com/godbus/dbus/v5 v5.0.4/go.mod h1:xhWf0FNVPg57R7Z0UbKHbJfkEywrmjJnf7w5xrFpKfA=
