@@ -11,9 +11,9 @@ require (
 	github.com/go-chi/httprate v0.14.1
 	github.com/go-webauthn/webauthn v0.12.2
 	github.com/gobuffalo/validate v2.0.4+incompatible
-	github.com/jackc/pgx/v5 v5.7.2
-	github.com/pressly/goose/v3 v3.24.1
-	github.com/spf13/viper v1.20.0
+	github.com/jackc/pgx/v5 v5.7.4
+	github.com/pressly/goose/v3 v3.24.2
+	github.com/spf13/viper v1.20.1
 	github.com/tkrajina/typescriptify-golang-structs v0.2.0
 	github.com/volatiletech/null/v8 v8.1.2
 	github.com/volatiletech/sqlboiler/v4 v4.18.0
@@ -27,7 +27,7 @@ require (
 	github.com/go-viper/mapstructure/v2 v2.2.1 // indirect
 	github.com/go-webauthn/x v0.1.19 // indirect
 	github.com/gofrs/uuid v4.4.0+incompatible // indirect
-	github.com/golang-jwt/jwt/v5 v5.2.1 // indirect
+	github.com/golang-jwt/jwt/v5 v5.2.2 // indirect
 	github.com/google/go-tpm v0.9.3 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
@@ -38,7 +38,7 @@ require (
 	github.com/onsi/ginkgo v1.16.5 // indirect
 	github.com/onsi/gomega v1.24.1 // indirect
 	github.com/pelletier/go-toml/v2 v2.2.3 // indirect
-	github.com/sagikazarmark/locafero v0.8.0 // indirect
+	github.com/sagikazarmark/locafero v0.9.0 // indirect
 	github.com/serenize/snaker v0.0.0-20201027110005-a7ad2135616e // indirect
 	github.com/sethvargo/go-retry v0.3.0 // indirect
 	github.com/sourcegraph/conc v0.3.0 // indirect
