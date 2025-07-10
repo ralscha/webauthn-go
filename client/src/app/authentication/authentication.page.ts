@@ -1,14 +1,4 @@
 import {Component, inject} from '@angular/core';
-import {NavController} from '@ionic/angular';
-import {MessagesService} from '../messages.service';
-import {HttpClient} from '@angular/common/http';
-import {environment} from '../../environments/environment';
-import {
-  AuthenticationResponseJSON,
-  PublicKeyCredentialRequestOptionsJSON,
-  startAuthentication
-} from '@simplewebauthn/browser';
-import {RouterLink} from '@angular/router';
 import {
   IonButton,
   IonCol,
@@ -18,8 +8,18 @@ import {
   IonRouterLink,
   IonRow,
   IonTitle,
-  IonToolbar
-} from "@ionic/angular/standalone";
+  IonToolbar,
+  NavController
+} from '@ionic/angular/standalone';
+import {MessagesService} from '../messages.service';
+import {HttpClient} from '@angular/common/http';
+import {environment} from '../../environments/environment';
+import {
+  AuthenticationResponseJSON,
+  PublicKeyCredentialRequestOptionsJSON,
+  startAuthentication
+} from '@simplewebauthn/browser';
+import {RouterLink} from '@angular/router';
 
 @Component({
   selector: 'app-authentication',

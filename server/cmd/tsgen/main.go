@@ -1,9 +1,9 @@
 package main
 
 import (
+	"github.com/aarondl/null/v8"
 	"github.com/gobuffalo/validate"
 	"github.com/tkrajina/typescriptify-golang-structs/typescriptify"
-	"github.com/volatiletech/null/v8"
 	"webauthn.rasc.ch/cmd/api/dto"
 )
 
