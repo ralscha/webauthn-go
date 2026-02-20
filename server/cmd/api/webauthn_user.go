@@ -40,8 +40,8 @@ func toWebAuthnUserWithCredentials(credential *models.Credential) (*WebAuthnUser
 	}
 
 	var transports []protocol.AuthenticatorTransport
-	splitted := strings.Split(credential.Transport, ",")
-	for _, s := range splitted {
+	splitted := strings.SplitSeq(credential.Transport, ",")
+	for s := range splitted {
 		transports = append(transports, protocol.AuthenticatorTransport(s))
 	}
 

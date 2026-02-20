@@ -9,6 +9,7 @@ import (
 	"github.com/go-webauthn/webauthn/protocol"
 	"github.com/go-webauthn/webauthn/webauthn"
 	"net/http"
+	"strings"
 	"time"
 	"webauthn.rasc.ch/cmd/api/dto"
 	"webauthn.rasc.ch/internal/models"
@@ -102,12 +103,12 @@ func (app *application) registrationFinish(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	transports := ""
+	var transports strings.Builder
 	for i, t := range credential.Transport {
 		if i > 0 {
-			transports += ","
+			transports.WriteString(",")
 		}
-		transports += string(t)
+		transports.WriteString(string(t))
 	}
 
 	appCredential := models.Credential{
@@ -127,7 +128,7 @@ func (app *application) registrationFinish(w http.ResponseWriter, r *http.Reques
 			Valid:  credential.AttestationType != "",
 		},
 		Attachment:     string(credential.Authenticator.Attachment),
-		Transport:      transports,
+		Transport:      transports.String(),
 		SignCount:      int(credential.Authenticator.SignCount),
 		CloneWarning:   credential.Authenticator.CloneWarning,
 		Present:        credential.Flags.UserPresent,
