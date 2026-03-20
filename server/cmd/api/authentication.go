@@ -4,12 +4,13 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"net/http"
+	"time"
+
 	"github.com/aarondl/null/v8"
 	"github.com/aarondl/sqlboiler/v4/queries/qm"
 	"github.com/go-webauthn/webauthn/protocol"
 	"github.com/go-webauthn/webauthn/webauthn"
-	"net/http"
-	"time"
 	"webauthn.rasc.ch/internal/models"
 	"webauthn.rasc.ch/internal/response"
 )
@@ -42,7 +43,7 @@ func (app *application) authenticationFinish(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	credential, err := app.webAuthn.ValidateDiscoverableLogin(app.createDiscovarableUserHandler(r.Context(), tx), sessionData, parsedResponse)
+	credential, err := app.webAuthn.ValidateDiscoverableLogin(app.createDiscoverableUserHandler(r.Context(), tx), sessionData, parsedResponse)
 	if err != nil {
 		response.InternalServerError(w, err)
 		return
@@ -86,7 +87,7 @@ func (app *application) authenticationFinish(w http.ResponseWriter, r *http.Requ
 	w.WriteHeader(http.StatusOK)
 }
 
-func (app *application) createDiscovarableUserHandler(ctx context.Context, tx *sql.Tx) webauthn.DiscoverableUserHandler {
+func (app *application) createDiscoverableUserHandler(ctx context.Context, tx *sql.Tx) webauthn.DiscoverableUserHandler {
 	return func(rawID, userHandle []byte) (webauthn.User, error) {
 		credential, err := models.Credentials(models.CredentialWhere.WebauthnUserID.EQ(userHandle)).One(ctx, tx)
 		if err != nil {

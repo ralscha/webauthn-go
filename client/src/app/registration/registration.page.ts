@@ -74,9 +74,9 @@ export class RegistrationPage {
   }
 
   private async handleSignUpStartResponse(optionsJSON: PublicKeyCredentialCreationOptionsJSON): Promise<void> {
-    let registrationResponse: RegistrationResponseJSON | null = null;
+    let registrationResponse: RegistrationResponseJSON;
     try {
-      registrationResponse = await startRegistration({optionsJSON})
+      registrationResponse = await startRegistration({optionsJSON});
     } catch (e) {
       await this.#messagesService.showErrorToast('Registration failed with error ' + e);
       return;
