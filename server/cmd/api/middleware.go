@@ -33,13 +33,45 @@ func (app *application) rwTransaction(next http.Handler) http.Handler {
 			return
 		}
 
+		committed := false
+		defer func() {
+			if !committed {
+				_ = tx.Rollback()
+			}
+		}()
+
 		ctx := context.WithValue(r.Context(), transactionKey, tx)
-		next.ServeHTTP(w, r.WithContext(ctx))
+		recorder := &statusRecorder{ResponseWriter: w}
+		next.ServeHTTP(recorder, r.WithContext(ctx))
+
+		if recorder.status >= http.StatusBadRequest {
+			return
+		}
 
 		if err := tx.Commit(); err != nil {
 			fmt.Println("Rolling back transaction")
 			response.InternalServerError(w, err)
 			return
 		}
+		committed = true
 	})
+}
+
+type statusRecorder struct {
+	http.ResponseWriter
+	status int
+}
+
+func (r *statusRecorder) WriteHeader(status int) {
+	if r.status == 0 {
+		r.status = status
+		r.ResponseWriter.WriteHeader(status)
+	}
+}
+
+func (r *statusRecorder) Write(b []byte) (int, error) {
+	if r.status == 0 {
+		r.status = http.StatusOK
+	}
+	return r.ResponseWriter.Write(b)
 }

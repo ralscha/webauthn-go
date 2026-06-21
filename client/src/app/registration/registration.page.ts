@@ -1,11 +1,12 @@
-import {Component, inject} from '@angular/core';
-import {HttpClient} from '@angular/common/http';
-import {MessagesService} from '../messages.service';
-import {environment} from '../../environments/environment';
-import {Errors, UsernameInput} from "../api/types";
-import {FormsModule, NgForm, NgModel} from "@angular/forms";
-import {displayFieldErrors} from "../util";
-import {Router} from "@angular/router";
+import { Component, inject, signal } from '@angular/core';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { MessagesService } from '../messages.service';
+import { environment } from '../../environments/environment';
+import { Errors, UsernameInput } from '../api/types';
+import { FormField, FormRoot, form, required } from '@angular/forms/signals';
+import type { FieldTree, TreeValidationResult } from '@angular/forms/signals';
+import { Router } from '@angular/router';
+import { firstValueFrom } from 'rxjs';
 import {
   PublicKeyCredentialCreationOptionsJSON,
   RegistrationResponseJSON,
@@ -23,80 +24,129 @@ import {
   IonItem,
   IonRow,
   IonTitle,
-  IonToolbar
-} from "@ionic/angular/standalone";
+  IonToolbar,
+} from '@ionic/angular/standalone';
+
+interface RegistrationFormModel {
+  username: string;
+}
 
 @Component({
   selector: 'app-registration',
   templateUrl: './registration.page.html',
-  imports: [FormsModule, IonHeader, IonToolbar, IonTitle, IonContent, IonGrid, IonRow, IonCol, IonButton, IonButtons, IonBackButton, IonInput, IonItem]
+  imports: [
+    FormRoot,
+    FormField,
+    IonHeader,
+    IonToolbar,
+    IonTitle,
+    IonContent,
+    IonGrid,
+    IonRow,
+    IonCol,
+    IonButton,
+    IonButtons,
+    IonBackButton,
+    IonInput,
+    IonItem,
+  ],
 })
 export class RegistrationPage {
   readonly #router = inject(Router);
   readonly #httpClient = inject(HttpClient);
   readonly #messagesService = inject(MessagesService);
 
-  async register(form: NgForm, username: string | null): Promise<void> {
-    if (!username) {
-      return;
-    }
+  readonly registrationModel = signal<RegistrationFormModel>({ username: '' });
+  readonly registrationForm = form(
+    this.registrationModel,
+    (path) => {
+      required(path.username, { message: 'Username is required' });
+    },
+    {
+      submission: {
+        action: (field) => this.register(field().value().username, field.username),
+      },
+    },
+  );
 
-    const loading = await this.#messagesService.showLoading('Starting registration process...');
-    await loading.present();
-
-    const userNameInput: UsernameInput = {username};
-
-    this.#httpClient.post<PublicKeyCredentialCreationOptionsJSON>(`${environment.API_URL}/registration/start`, userNameInput)
-      .subscribe({
-        next: async (response) => {
-          await loading.dismiss();
-          await this.handleSignUpStartResponse(response);
-        },
-        error: (errorResponse) => {
-          loading.dismiss();
-          const response: Errors = errorResponse.error;
-          if (response?.errors) {
-            displayFieldErrors(form, response.errors)
-          }
-          this.#messagesService.showErrorToast('Registration failed');
-        }
-      });
+  usernameError(): string | null {
+    const error = this.registrationForm.username().errors()[0];
+    return error?.message ?? null;
   }
 
-  errorMsg(username: NgModel): string | null {
-    if (username.errors?.['required']) {
-      return 'Username is required';
+  private async register(
+    username: string,
+    usernameField: FieldTree<string>,
+  ): Promise<TreeValidationResult> {
+    const loading = await this.#messagesService.showLoading('Starting registration process...');
+    const userNameInput: UsernameInput = { username };
+
+    let response: PublicKeyCredentialCreationOptionsJSON;
+    try {
+      response = await firstValueFrom(
+        this.#httpClient.post<PublicKeyCredentialCreationOptionsJSON>(
+          `${environment.API_URL}/registration/start`,
+          userNameInput,
+        ),
+      );
+    } catch (error) {
+      const errors = this.extractFieldErrors(error);
+      if (errors.length > 0) {
+        return errors.map((kind) => ({
+          kind,
+          message: this.serverErrorMessage(kind),
+          fieldTree: usernameField,
+        }));
+      }
+
+      await this.#messagesService.showErrorToast('Registration failed');
+      return { kind: 'registrationStartFailed', message: 'Registration failed' };
+    } finally {
+      await loading.dismiss();
     }
-    if (username.errors?.['exists']) {
+
+    await this.handleSignUpStartResponse(response);
+  }
+
+  private extractFieldErrors(error: unknown): string[] {
+    if (!(error instanceof HttpErrorResponse)) {
+      return [];
+    }
+
+    const response: Errors | undefined = error.error;
+    return response?.errors?.['username'] ?? [];
+  }
+
+  private serverErrorMessage(kind: string): string {
+    if (kind === 'exists') {
       return 'Username already registered';
     }
-    return null;
+    return 'Registration failed';
   }
 
-  private async handleSignUpStartResponse(optionsJSON: PublicKeyCredentialCreationOptionsJSON): Promise<void> {
+  private async handleSignUpStartResponse(
+    optionsJSON: PublicKeyCredentialCreationOptionsJSON,
+  ): Promise<void> {
     let registrationResponse: RegistrationResponseJSON;
     try {
-      registrationResponse = await startRegistration({optionsJSON});
+      registrationResponse = await startRegistration({ optionsJSON });
     } catch (e) {
       await this.#messagesService.showErrorToast('Registration failed with error ' + e);
       return;
     }
     const loading = await this.#messagesService.showLoading('Finishing registration process...');
-    await loading.present();
 
-    this.#httpClient.post(`${environment.API_URL}/registration/finish`, registrationResponse)
-      .subscribe({
-        next: () => {
-          loading.dismiss();
-          this.#messagesService.showSuccessToast('Registration successful');
-          this.#router.navigate(['/login']);
-        },
-        error: () => {
-          loading.dismiss();
-          this.#messagesService.showErrorToast('Registration failed');
-        }
-      });
+    try {
+      await firstValueFrom(
+        this.#httpClient.post(`${environment.API_URL}/registration/finish`, registrationResponse),
+      );
+      await this.#messagesService.showSuccessToast('Registration successful');
+      await this.#router.navigate(['/login']);
+    } catch {
+      await this.#messagesService.showErrorToast('Registration failed');
+    } finally {
+      await loading.dismiss();
+    }
   }
 }
-
 

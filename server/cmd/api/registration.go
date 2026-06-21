@@ -4,13 +4,16 @@ import (
 	"crypto/rand"
 	"database/sql"
 	"fmt"
-	"github.com/aarondl/null/v8"
-	"github.com/aarondl/sqlboiler/v4/boil"
-	"github.com/go-webauthn/webauthn/protocol"
-	"github.com/go-webauthn/webauthn/webauthn"
 	"net/http"
 	"strings"
 	"time"
+
+	"github.com/aarondl/null/v8"
+	"github.com/aarondl/sqlboiler/v4/boil"
+	"github.com/aarondl/sqlboiler/v4/queries/qm"
+	"github.com/go-webauthn/webauthn/protocol"
+	"github.com/go-webauthn/webauthn/webauthn"
+	"github.com/gobuffalo/validate"
 	"webauthn.rasc.ch/cmd/api/dto"
 	"webauthn.rasc.ch/internal/models"
 	"webauthn.rasc.ch/internal/request"
@@ -24,7 +27,19 @@ func (app *application) registrationStart(w http.ResponseWriter, r *http.Request
 	tx := r.Context().Value(transactionKey).(*sql.Tx)
 
 	var usernameInput dto.UsernameInput
-	if ok := request.DecodeJSONValidate[*dto.UsernameInput](w, r, &usernameInput, dto.ValidateUsernameInput); !ok {
+	if ok := request.DecodeJSONValidate(w, r, &usernameInput, dto.ValidateUsernameInput); !ok {
+		return
+	}
+
+	existingUserCount, err := models.Users(qm.Where("username = ?", usernameInput.Username)).Count(r.Context(), tx)
+	if err != nil {
+		response.InternalServerError(w, err)
+		return
+	}
+	if existingUserCount > 0 {
+		validationErrors := validate.NewErrors()
+		validationErrors.Add("username", "exists")
+		response.FailedValidation(w, validationErrors)
 		return
 	}
 

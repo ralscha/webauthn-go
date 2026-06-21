@@ -1,12 +1,10 @@
-import {inject, Injectable} from '@angular/core';
-import {Observable, of} from 'rxjs';
-import {HttpClient} from '@angular/common/http';
-import {catchError, map, tap} from 'rxjs/operators';
-import {environment} from '../environments/environment';
+import { inject, Service } from '@angular/core';
+import { Observable, of } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
+import { catchError, map, tap } from 'rxjs/operators';
+import { environment } from '../environments/environment';
 
-@Injectable({
-  providedIn: 'root'
-})
+@Service()
 export class AuthService {
   private readonly httpClient = inject(HttpClient);
 
@@ -14,24 +12,22 @@ export class AuthService {
 
   isAuthenticated(): Observable<boolean> {
     return this.httpClient.post<void>(`${environment.API_URL}/authenticate`, null).pipe(
-      tap(() => this.loggedIn = true),
+      tap(() => (this.loggedIn = true)),
       map(() => true),
       catchError(() => {
         this.loggedIn = false;
         return of(false);
-      })
+      }),
     );
   }
 
   logout(): Observable<void> {
-    return this.httpClient.post<void>(`${environment.API_URL}/logout`, null).pipe(tap(() => this.loggedIn = false));
+    return this.httpClient
+      .post<void>(`${environment.API_URL}/logout`, null)
+      .pipe(tap(() => (this.loggedIn = false)));
   }
 
   isLoggedIn(): boolean {
     return this.loggedIn;
   }
-
 }
-
-
-

@@ -2,7 +2,7 @@
 CREATE TABLE users
 (
     id                 SERIAL PRIMARY KEY,
-    username           VARCHAR   NOT NULL,
+    username           VARCHAR   NOT NULL UNIQUE,
     registration_start TIMESTAMP NULL,
     created_at         TIMESTAMP DEFAULT now()
 );

@@ -1,7 +1,13 @@
-import {HttpClient} from '@angular/common/http';
-import {Component, inject, OnDestroy, OnInit} from '@angular/core';
-import {RouterLink} from '@angular/router';
-import {firstValueFrom} from 'rxjs';
+import { HttpClient } from '@angular/common/http';
+import { Component, inject, OnDestroy, OnInit, signal } from '@angular/core';
+import { RouterLink } from '@angular/router';
+import { firstValueFrom } from 'rxjs';
+import {
+  AuthenticationResponseJSON,
+  browserSupportsWebAuthnAutofill,
+  PublicKeyCredentialRequestOptionsJSON,
+  startAuthentication,
+} from '@simplewebauthn/browser';
 import {
   IonButton,
   IonCol,
@@ -14,61 +20,69 @@ import {
   IonRow,
   IonTitle,
   IonToolbar,
-  NavController
+  NavController,
 } from '@ionic/angular/standalone';
-import {MessagesService} from '../messages.service';
-import {environment} from '../../environments/environment';
+import { MessagesService } from '../messages.service';
+import { environment } from '../../environments/environment';
 
 @Component({
   selector: 'app-authentication',
   templateUrl: './authentication.page.html',
-  imports: [RouterLink, IonRouterLink, IonHeader, IonToolbar, IonTitle, IonContent, IonGrid, IonRow, IonCol, IonItem, IonInput, IonButton]
+  imports: [
+    RouterLink,
+    IonRouterLink,
+    IonHeader,
+    IonToolbar,
+    IonTitle,
+    IonContent,
+    IonGrid,
+    IonRow,
+    IonCol,
+    IonItem,
+    IonInput,
+    IonButton,
+  ],
 })
 export class AuthenticationPage implements OnInit, OnDestroy {
-  conditionalMediationAvailable = false;
+  readonly conditionalMediationAvailable = signal(false);
 
   readonly #navCtrl = inject(NavController);
   readonly #httpClient = inject(HttpClient);
   readonly #messagesService = inject(MessagesService);
-  #conditionalMediationAbortController: AbortController | null = null;
+  #active = true;
 
   ngOnInit(): void {
     void this.startPasskeyAutofill();
   }
 
   ngOnDestroy(): void {
-    this.abortConditionalMediation();
+    this.#active = false;
   }
 
   async login(): Promise<void> {
-    this.abortConditionalMediation();
-
     const loading = await this.#messagesService.showLoading('Starting login ...');
     try {
       const response = await firstValueFrom(
-        this.#httpClient.post<PublicKeyCredentialRequestOptionsJSON>(`${environment.API_URL}/authentication/start`, null)
+        this.#httpClient.post<PublicKeyCredentialRequestOptionsJSON>(
+          `${environment.API_URL}/authentication/start`,
+          null,
+        ),
       );
       await loading.dismiss();
       await this.handleLoginStartResponse(response);
-    }
-    catch {
+    } catch {
       await loading.dismiss();
       await this.#messagesService.showErrorToast('Login failed');
     }
   }
 
-  private async handleLoginStartResponse(optionsJSON: PublicKeyCredentialRequestOptionsJSON): Promise<void> {
+  private async handleLoginStartResponse(
+    optionsJSON: PublicKeyCredentialRequestOptionsJSON,
+  ): Promise<void> {
     try {
-      const publicKey = PublicKeyCredential.parseRequestOptionsFromJSON(optionsJSON);
-      const credential = await navigator.credentials.get({publicKey}) as PublicKeyCredential | null;
-
-      if (!credential) {
-        return;
-      }
-
-      await this.finishAuthentication(credential.toJSON());
-    }
-    catch (error) {
+      const credential = await startAuthentication({ optionsJSON });
+      await this.finishAuthentication(credential);
+    } catch (error) {
       if (!this.isExpectedCredentialError(error)) {
         await this.#messagesService.showErrorToast('Login failed');
       }
@@ -76,67 +90,56 @@ export class AuthenticationPage implements OnInit, OnDestroy {
   }
 
   private async startPasskeyAutofill(): Promise<void> {
-    if (!window.PublicKeyCredential
-      || typeof PublicKeyCredential.isConditionalMediationAvailable !== 'function') {
-      return;
-    }
-
     try {
-      this.conditionalMediationAvailable =
-        await PublicKeyCredential.isConditionalMediationAvailable();
+      this.conditionalMediationAvailable.set(await browserSupportsWebAuthnAutofill());
 
-      if (!this.conditionalMediationAvailable) {
+      if (!this.conditionalMediationAvailable()) {
         return;
       }
 
       const response = await firstValueFrom(
-        this.#httpClient.post<PublicKeyCredentialRequestOptionsJSON>(`${environment.API_URL}/authentication/start`, null)
+        this.#httpClient.post<PublicKeyCredentialRequestOptionsJSON>(
+          `${environment.API_URL}/authentication/start`,
+          null,
+        ),
       );
-      const publicKey = PublicKeyCredential.parseRequestOptionsFromJSON(response);
 
-      this.#conditionalMediationAbortController = new AbortController();
-      const credential = await navigator.credentials.get({
-        publicKey,
-        mediation: 'conditional',
-        signal: this.#conditionalMediationAbortController.signal
-      }) as PublicKeyCredential | null;
-      this.#conditionalMediationAbortController = null;
+      const credential = await startAuthentication({
+        optionsJSON: response,
+        useBrowserAutofill: true,
+      });
 
-      if (!credential) {
-        return;
-      }
-
-      await this.finishAuthentication(credential.toJSON());
-    }
-    catch (error) {
-      this.#conditionalMediationAbortController = null;
+      await this.finishAuthentication(credential);
+    } catch (error) {
       if (!this.isExpectedCredentialError(error)) {
         await this.#messagesService.showErrorToast('Passkey autofill failed');
       }
     }
   }
 
-  private async finishAuthentication(credential: PublicKeyCredentialJSON): Promise<void> {
+  private async finishAuthentication(credential: AuthenticationResponseJSON): Promise<void> {
+    if (!this.#active) {
+      return;
+    }
+
     const loading = await this.#messagesService.showLoading('Validating ...');
 
     try {
-      await firstValueFrom(this.#httpClient.post<void>(`${environment.API_URL}/authentication/finish`, credential));
+      await firstValueFrom(
+        this.#httpClient.post<void>(`${environment.API_URL}/authentication/finish`, credential),
+      );
       await loading.dismiss();
-      await this.#navCtrl.navigateRoot('/home', {replaceUrl: true});
-    }
-    catch {
+      await this.#navCtrl.navigateRoot('/home', { replaceUrl: true });
+    } catch {
       await loading.dismiss();
       await this.#messagesService.showErrorToast('Login failed');
     }
   }
 
-  private abortConditionalMediation(): void {
-    this.#conditionalMediationAbortController?.abort();
-    this.#conditionalMediationAbortController = null;
-  }
-
   private isExpectedCredentialError(error: unknown): boolean {
-    return error instanceof DOMException
-      && (error.name === 'AbortError' || error.name === 'NotAllowedError');
+    return (
+      error instanceof DOMException &&
+      (error.name === 'AbortError' || error.name === 'NotAllowedError')
+    );
   }
 }
