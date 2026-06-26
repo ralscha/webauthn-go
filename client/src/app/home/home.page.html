@@ -1,15 +1,22 @@
-<ion-header>
-  <ion-toolbar color="primary">
-    <ion-title> Protected Page </ion-title>
-  </ion-toolbar>
-</ion-header>
-
-<ion-content class="ion-padding">
-  <h1>Logged In</h1>
-  <div>Response from protected endpoint:</div>
-  <div>{{ secret.value()?.message }}</div>
-
-  <div class="ion-margin-top">
-    <ion-button (click)="logout()" class="ion-margin-top">Logout</ion-button>
+<div class="navbar bg-base-100 shadow-sm">
+  <div class="navbar-start">
+    <h1 class="text-lg font-semibold">Protected Page</h1>
   </div>
-</ion-content>
+  <div class="navbar-end">
+    <button (click)="logout()" class="btn btn-ghost" type="button">Logout</button>
+  </div>
+</div>
+
+<section class="mx-auto w-full max-w-3xl p-4 sm:p-6">
+  <div class="card card-border bg-base-100 shadow-sm">
+    <div class="card-body gap-4">
+      <h2 class="card-title">Logged In</h2>
+      <div>
+        <p class="text-sm opacity-70">Response from protected endpoint:</p>
+        <p class="mt-2 rounded bg-base-200 p-3 font-mono text-sm">
+          {{ secret.value()?.message || 'Loading...' }}
+        </p>
+      </div>
+    </div>
+  </div>
+</section>

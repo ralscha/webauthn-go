@@ -1,29 +1,23 @@
 import { httpResource } from '@angular/common/http';
 import { Component, inject } from '@angular/core';
+import { Router } from '@angular/router';
 import { AuthService } from '../auth.service';
-import {
-  IonButton,
-  IonContent,
-  IonHeader,
-  IonTitle,
-  IonToolbar,
-  NavController,
-} from '@ionic/angular/standalone';
 import { environment } from '../../environments/environment';
 import { SecretOutput } from '../api/types';
 
 @Component({
   selector: 'app-home',
   templateUrl: './home.page.html',
-  imports: [IonHeader, IonToolbar, IonTitle, IonContent, IonButton],
 })
 export class HomePage {
   readonly secret = httpResource<SecretOutput>(() => `${environment.API_URL}/secret`);
 
   private readonly authService = inject(AuthService);
-  private readonly navCtrl = inject(NavController);
+  private readonly router = inject(Router);
 
   async logout(): Promise<void> {
-    this.authService.logout().subscribe(() => this.navCtrl.navigateRoot('/login'));
+    this.authService
+      .logout()
+      .subscribe(() => this.router.navigate(['/login'], { replaceUrl: true }));
   }
 }

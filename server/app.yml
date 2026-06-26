@@ -15,4 +15,4 @@ session:
 webauthn:
   rpId: localhost
   rpDisplayName: WebAuthn Example Application
-  rpOrigins: http://localhost:8100
+  rpOrigins: http://localhost:4200

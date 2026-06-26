@@ -5,27 +5,13 @@ import { environment } from '../../environments/environment';
 import { Errors, UsernameInput } from '../api/types';
 import { FormField, FormRoot, form, required } from '@angular/forms/signals';
 import type { FieldTree, TreeValidationResult } from '@angular/forms/signals';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import {
   PublicKeyCredentialCreationOptionsJSON,
   RegistrationResponseJSON,
   startRegistration,
 } from '@simplewebauthn/browser';
-import {
-  IonBackButton,
-  IonButton,
-  IonButtons,
-  IonCol,
-  IonContent,
-  IonGrid,
-  IonHeader,
-  IonInput,
-  IonItem,
-  IonRow,
-  IonTitle,
-  IonToolbar,
-} from '@ionic/angular/standalone';
 
 interface RegistrationFormModel {
   username: string;
@@ -34,22 +20,7 @@ interface RegistrationFormModel {
 @Component({
   selector: 'app-registration',
   templateUrl: './registration.page.html',
-  imports: [
-    FormRoot,
-    FormField,
-    IonHeader,
-    IonToolbar,
-    IonTitle,
-    IonContent,
-    IonGrid,
-    IonRow,
-    IonCol,
-    IonButton,
-    IonButtons,
-    IonBackButton,
-    IonInput,
-    IonItem,
-  ],
+  imports: [FormRoot, FormField, RouterLink],
 })
 export class RegistrationPage {
   readonly #router = inject(Router);
@@ -149,4 +120,3 @@ export class RegistrationPage {
     }
   }
 }
-

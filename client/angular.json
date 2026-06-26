@@ -17,10 +17,10 @@
               "base": "dist/app"
             },
             "index": "src/index.html",
-            "polyfills": ["src/polyfills.ts"],
+            "polyfills": [],
             "tsConfig": "tsconfig.app.json",
             "inlineStyleLanguage": "scss",
-            "styles": ["src/global.scss", "src/variables.scss"],
+            "styles": ["src/global.css"],
             "scripts": [],
             "browser": "src/main.ts"
           },
@@ -80,16 +80,8 @@
       }
     }
   },
-  "cli": {
-    "schematicCollections": ["@ionic/angular-toolkit"]
-  },
+  "cli": {},
   "schematics": {
-    "@ionic/angular-toolkit:component": {
-      "styles": "scss"
-    },
-    "@ionic/angular-toolkit:page": {
-      "styles": "scss"
-    },
     "@schematics/angular:component": {
       "type": "component"
     },

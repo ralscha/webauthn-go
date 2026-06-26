@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Component, inject, OnDestroy, OnInit, signal } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import {
   AuthenticationResponseJSON,
@@ -8,45 +8,18 @@ import {
   PublicKeyCredentialRequestOptionsJSON,
   startAuthentication,
 } from '@simplewebauthn/browser';
-import {
-  IonButton,
-  IonCol,
-  IonContent,
-  IonGrid,
-  IonHeader,
-  IonInput,
-  IonItem,
-  IonRouterLink,
-  IonRow,
-  IonTitle,
-  IonToolbar,
-  NavController,
-} from '@ionic/angular/standalone';
 import { MessagesService } from '../messages.service';
 import { environment } from '../../environments/environment';
 
 @Component({
   selector: 'app-authentication',
   templateUrl: './authentication.page.html',
-  imports: [
-    RouterLink,
-    IonRouterLink,
-    IonHeader,
-    IonToolbar,
-    IonTitle,
-    IonContent,
-    IonGrid,
-    IonRow,
-    IonCol,
-    IonItem,
-    IonInput,
-    IonButton,
-  ],
+  imports: [RouterLink],
 })
 export class AuthenticationPage implements OnInit, OnDestroy {
   readonly conditionalMediationAvailable = signal(false);
 
-  readonly #navCtrl = inject(NavController);
+  readonly #router = inject(Router);
   readonly #httpClient = inject(HttpClient);
   readonly #messagesService = inject(MessagesService);
   #active = true;
@@ -129,7 +102,7 @@ export class AuthenticationPage implements OnInit, OnDestroy {
         this.#httpClient.post<void>(`${environment.API_URL}/authentication/finish`, credential),
       );
       await loading.dismiss();
-      await this.#navCtrl.navigateRoot('/home', { replaceUrl: true });
+      await this.#router.navigate(['/home'], { replaceUrl: true });
     } catch {
       await loading.dismiss();
       await this.#messagesService.showErrorToast('Login failed');

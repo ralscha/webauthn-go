@@ -1,44 +1,39 @@
-<ion-header>
-  <ion-toolbar color="secondary">
-    <ion-buttons slot="start">
-      <ion-back-button defaultHref="/login" />
-    </ion-buttons>
-    <ion-title>Registration</ion-title>
-  </ion-toolbar>
-</ion-header>
+<div class="navbar bg-base-100 shadow-sm">
+  <div class="navbar-start">
+    <a class="btn btn-ghost" routerLink="/login">Back</a>
+  </div>
+  <div class="navbar-center">
+    <h1 class="text-lg font-semibold">Registration</h1>
+  </div>
+</div>
 
-<ion-content class="ion-padding">
-  <form [formRoot]="registrationForm" class="ion-margin-top">
-    <ion-grid>
-      <ion-row>
-        <ion-col>
-          <ion-item lines="none">
-            <ion-input
-              [errorText]="usernameError()"
-              [formField]="registrationForm.username"
-              [spellcheck]="false"
-              autocapitalize="off"
-              autocomplete="username"
-              label="Username"
-              labelPlacement="stacked"
-              type="text"
-            />
-          </ion-item>
-        </ion-col>
-      </ion-row>
+<section class="mx-auto grid min-h-[calc(100vh-4rem)] w-full max-w-md place-items-center p-4">
+  <form [formRoot]="registrationForm" class="card card-border w-full bg-base-100 shadow-sm">
+    <div class="card-body gap-4">
+      <label class="form-control w-full">
+        <span class="label-text mb-2">Username</span>
+        <input
+          [class.input-error]="usernameError()"
+          [formField]="registrationForm.username"
+          [spellcheck]="false"
+          autocapitalize="off"
+          autocomplete="username"
+          class="input w-full"
+          type="text"
+        />
+      </label>
 
-      <ion-row>
-        <ion-col class="ion-margin-top">
-          <ion-button
-            [disabled]="registrationForm().submitting()"
-            color="secondary"
-            expand="block"
-            type="submit"
-          >
-            Register
-          </ion-button>
-        </ion-col>
-      </ion-row>
-    </ion-grid>
+      @if (usernameError(); as error) {
+        <p class="text-sm text-error">{{ error }}</p>
+      }
+
+      <button
+        [disabled]="registrationForm().submitting()"
+        class="btn btn-primary btn-block"
+        type="submit"
+      >
+        Register
+      </button>
+    </div>
   </form>
-</ion-content>
+</section>
