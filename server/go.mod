@@ -15,7 +15,7 @@ require (
 	github.com/go-webauthn/webauthn v0.17.4
 	github.com/gobuffalo/validate v2.0.4+incompatible
 	github.com/jackc/pgx/v5 v5.10.0
-	github.com/pressly/goose/v3 v3.27.2
+	github.com/pressly/goose/v3 v3.27.3
 	github.com/spf13/viper v1.21.0
 	github.com/tkrajina/typescriptify-golang-structs v0.2.0
 )
