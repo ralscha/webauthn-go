@@ -31,7 +31,7 @@
     "@eslint/js": "10.0.1",
     "angular-eslint": "22.1.0",
     "bread-compressor-cli": "4.1.1",
-    "daisyui": "5.7.8",
+    "daisyui": "5.7.9",
     "eslint": "10.8.0",
     "prettier": "3.9.6",
     "tailwindcss": "4.3.3",
