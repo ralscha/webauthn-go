@@ -72,7 +72,7 @@ func (app *application) registrationStart(w http.ResponseWriter, r *http.Request
 		UserVerification:   protocol.VerificationPreferred,
 	}), webauthn.WithConveyancePreference(protocol.PreferNoAttestation),
 		webauthn.WithExclusions([]protocol.CredentialDescriptor{}),
-		webauthn.WithExtensions(protocol.AuthenticationExtensions{"credProps": true}),
+		webauthn.WithExtensions(webauthn.WithExtensionCredProps()),
 	)
 
 	if err != nil {
