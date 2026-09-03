@@ -5,8 +5,10 @@ import (
 	"webauthn.rasc.ch/internal/response"
 )
 
+const authenticatedUserIDKey = "userID"
+
 func (app *application) authenticateHandler(w http.ResponseWriter, r *http.Request) {
-	userID := app.sessionManager.GetInt(r.Context(), "userID")
+	userID := app.sessionManager.GetInt(r.Context(), authenticatedUserIDKey)
 	if userID > 0 {
 		w.WriteHeader(http.StatusNoContent)
 	} else {

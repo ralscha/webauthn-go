@@ -9,6 +9,7 @@ import (
 	"os"
 	"time"
 	"webauthn.rasc.ch/internal/config"
+	"webauthn.rasc.ch/internal/database"
 	"webauthn.rasc.ch/migrations"
 )
 
@@ -31,8 +32,7 @@ func main() {
 		log.Fatalln("reading config failed", err)
 	}
 
-	dsn := "postgres://" + cfg.DB.User + ":" + cfg.DB.Password + "@" + cfg.DB.Connection + "/" + cfg.DB.Database
-	db, err := goose.OpenDBWithDriver("pgx", dsn)
+	db, err := goose.OpenDBWithDriver("pgx", database.DSN(cfg))
 	if err != nil {
 		log.Fatalf("goose: failed to open DB: %v\n", err)
 	}

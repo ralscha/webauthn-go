@@ -11,7 +11,7 @@ import (
 	"webauthn.rasc.ch/internal/response"
 )
 
-const maxBytes = 1_048_576
+const MaxBodyBytes int64 = 1_048_576
 
 func DecodeJSONValidate[T any](w http.ResponseWriter, r *http.Request, dst T, validate dto.ValidatorFn[T]) bool {
 	if err := DecodeJSON(w, r, dst); err != nil {
@@ -29,7 +29,7 @@ func DecodeJSONValidate[T any](w http.ResponseWriter, r *http.Request, dst T, va
 }
 
 func DecodeJSON(w http.ResponseWriter, r *http.Request, dst any) error {
-	r.Body = http.MaxBytesReader(w, r.Body, int64(maxBytes))
+	r.Body = http.MaxBytesReader(w, r.Body, MaxBodyBytes)
 
 	dec := json.NewDecoder(r.Body)
 	dec.DisallowUnknownFields()
@@ -39,6 +39,7 @@ func DecodeJSON(w http.ResponseWriter, r *http.Request, dst any) error {
 		var syntaxError *json.SyntaxError
 		var unmarshalTypeError *json.UnmarshalTypeError
 		var invalidUnmarshalError *json.InvalidUnmarshalError
+		var maxBytesError *http.MaxBytesError
 
 		switch {
 		case errors.As(err, &syntaxError):
@@ -60,8 +61,8 @@ func DecodeJSON(w http.ResponseWriter, r *http.Request, dst any) error {
 			fieldName := strings.TrimPrefix(err.Error(), "json: unknown field ")
 			return fmt.Errorf("body contains unknown key %s", fieldName)
 
-		case err.Error() == "http: request body too large":
-			return fmt.Errorf("body must not be larger than %d bytes", maxBytes)
+		case errors.As(err, &maxBytesError):
+			return fmt.Errorf("body must not be larger than %d bytes", MaxBodyBytes)
 
 		case errors.As(err, &invalidUnmarshalError):
 			panic(err)

@@ -27,15 +27,14 @@ func (app *application) routes() http.Handler {
 	mux.Use(middleware.NoCache)
 
 	mux.Route("/api/v1", func(r chi.Router) {
+		r.Use(limitRequestBody)
 		r.Use(app.sessionManager.LoadAndSave)
-		r.Group(func(r chi.Router) {
-			r.Post("/authenticate", app.authenticateHandler)
-			r.Post("/logout", app.logoutHandler)
-		})
+		r.Post("/authenticate", app.authenticateHandler)
+		r.Post("/logout", app.logoutHandler)
+		r.Post("/authentication/start", app.authenticationStart)
 
 		r.Group(func(r chi.Router) {
 			r.Use(app.rwTransaction)
-			r.Post("/authentication/start", app.authenticationStart)
 			r.Post("/authentication/finish", app.authenticationFinish)
 			r.Post("/registration/start", app.registrationStart)
 			r.Post("/registration/finish", app.registrationFinish)

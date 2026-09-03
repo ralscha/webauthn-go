@@ -3,7 +3,7 @@ package main
 import (
 	"crypto/rand"
 	"database/sql"
-	"fmt"
+	"errors"
 	"net/http"
 	"strings"
 	"time"
@@ -91,20 +91,22 @@ func (app *application) registrationFinish(w http.ResponseWriter, r *http.Reques
 
 	options, ok := app.sessionManager.Get(r.Context(), registrationSessionDataKey).(webauthn.SessionData)
 	if !ok {
-		err := fmt.Errorf("webAuthn session data not found")
-		response.InternalServerError(w, err)
+		response.BadRequest(w, errors.New("registration ceremony has not been started or has expired"))
 		return
 	}
 	userId, ok := app.sessionManager.Get(r.Context(), registrationSessionUserId).(int)
 	if !ok {
-		err := fmt.Errorf("webAuthn session user id not found")
-		response.InternalServerError(w, err)
+		response.BadRequest(w, errors.New("registration ceremony has not been started or has expired"))
 		return
 	}
 
 	user, err := models.FindUser(r.Context(), tx, userId)
 	if err != nil {
-		response.InternalServerError(w, err)
+		if errors.Is(err, sql.ErrNoRows) {
+			response.BadRequest(w, errors.New("registration ceremony has expired"))
+		} else {
+			response.InternalServerError(w, err)
+		}
 		return
 	}
 	webAuthnUser := &WebAuthnUser{
@@ -114,7 +116,7 @@ func (app *application) registrationFinish(w http.ResponseWriter, r *http.Reques
 
 	credential, err := app.webAuthn.FinishRegistration(webAuthnUser, options, r)
 	if err != nil {
-		response.InternalServerError(w, err)
+		response.BadRequest(w, errors.New("invalid registration response"))
 		return
 	}
 

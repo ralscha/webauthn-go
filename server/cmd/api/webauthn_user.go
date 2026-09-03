@@ -8,6 +8,7 @@ import (
 )
 
 type WebAuthnUser struct {
+	userID      int
 	username    string
 	id          []byte
 	credentials []webauthn.Credential
@@ -33,7 +34,7 @@ func (u *WebAuthnUser) WebAuthnCredentials() []webauthn.Credential {
 	return u.credentials
 }
 
-func toWebAuthnUserWithCredentials(credential *models.Credential) (*WebAuthnUser, error) {
+func toWebAuthnUserWithCredentials(credential *models.Credential) *WebAuthnUser {
 	attestationType := ""
 	if credential.AttestationType.Valid {
 		attestationType = credential.AttestationType.String
@@ -42,7 +43,9 @@ func toWebAuthnUserWithCredentials(credential *models.Credential) (*WebAuthnUser
 	var transports []protocol.AuthenticatorTransport
 	splitted := strings.SplitSeq(credential.Transport, ",")
 	for s := range splitted {
-		transports = append(transports, protocol.AuthenticatorTransport(s))
+		if s != "" {
+			transports = append(transports, protocol.AuthenticatorTransport(s))
+		}
 	}
 
 	webAuthnCredential := webauthn.Credential{
@@ -66,8 +69,9 @@ func toWebAuthnUserWithCredentials(credential *models.Credential) (*WebAuthnUser
 	}
 
 	return &WebAuthnUser{
+		userID:      credential.UserID,
 		username:    "",
 		id:          credential.WebauthnUserID,
 		credentials: []webauthn.Credential{webAuthnCredential},
-	}, nil
+	}
 }

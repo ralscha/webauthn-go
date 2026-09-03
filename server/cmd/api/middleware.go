@@ -2,18 +2,28 @@ package main
 
 import (
 	"context"
-	"fmt"
+	"io"
+	"log/slog"
 	"net/http"
+	"net/http/httptest"
+	"webauthn.rasc.ch/internal/request"
 	"webauthn.rasc.ch/internal/response"
 )
 
+func limitRequestBody(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		r.Body = http.MaxBytesReader(w, r.Body, request.MaxBodyBytes)
+		next.ServeHTTP(w, r)
+	})
+}
+
 func (app *application) authenticatedOnly(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		userID := app.sessionManager.GetInt(r.Context(), "userID")
+		userID := app.sessionManager.GetInt(r.Context(), authenticatedUserIDKey)
 		if userID > 0 {
 			next.ServeHTTP(w, r)
 		} else {
-			response.Forbidden(w)
+			response.Unauthorized(w)
 		}
 	})
 }
@@ -28,7 +38,6 @@ func (app *application) rwTransaction(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		tx, err := app.database.BeginTx(r.Context(), nil)
 		if err != nil {
-			fmt.Println("rwTransaction: BeginTx failed")
 			response.InternalServerError(w, err)
 			return
 		}
@@ -41,37 +50,32 @@ func (app *application) rwTransaction(next http.Handler) http.Handler {
 		}()
 
 		ctx := context.WithValue(r.Context(), transactionKey, tx)
-		recorder := &statusRecorder{ResponseWriter: w}
+		recorder := httptest.NewRecorder()
 		next.ServeHTTP(recorder, r.WithContext(ctx))
 
-		if recorder.status >= http.StatusBadRequest {
+		if recorder.Code >= http.StatusBadRequest {
+			writeRecordedResponse(w, recorder)
 			return
 		}
 
 		if err := tx.Commit(); err != nil {
-			fmt.Println("Rolling back transaction")
 			response.InternalServerError(w, err)
 			return
 		}
 		committed = true
+		writeRecordedResponse(w, recorder)
 	})
 }
 
-type statusRecorder struct {
-	http.ResponseWriter
-	status int
-}
-
-func (r *statusRecorder) WriteHeader(status int) {
-	if r.status == 0 {
-		r.status = status
-		r.ResponseWriter.WriteHeader(status)
+func writeRecordedResponse(w http.ResponseWriter, recorder *httptest.ResponseRecorder) {
+	for key, values := range recorder.Header() {
+		w.Header()[key] = append([]string(nil), values...)
 	}
-}
-
-func (r *statusRecorder) Write(b []byte) (int, error) {
-	if r.status == 0 {
-		r.status = http.StatusOK
+	w.WriteHeader(recorder.Code)
+	if recorder.Body.Len() == 0 {
+		return
 	}
-	return r.ResponseWriter.Write(b)
+	if _, err := io.Copy(w, recorder.Body); err != nil {
+		slog.Error("writing buffered response failed", "error", err)
+	}
 }

@@ -1,14 +1,13 @@
 package main
 
 import (
-	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"net/http"
 	"time"
 
 	"github.com/aarondl/null/v8"
-	"github.com/aarondl/sqlboiler/v4/queries/qm"
 	"github.com/go-webauthn/webauthn/protocol"
 	"github.com/go-webauthn/webauthn/webauthn"
 	"webauthn.rasc.ch/internal/models"
@@ -32,25 +31,47 @@ func (app *application) authenticationFinish(w http.ResponseWriter, r *http.Requ
 	tx := r.Context().Value(transactionKey).(*sql.Tx)
 	sessionData, ok := app.sessionManager.Get(r.Context(), authenticationSessionDataKey).(webauthn.SessionData)
 	if !ok {
-		err := fmt.Errorf("webAuthn session data not found")
-		response.InternalServerError(w, err)
+		response.BadRequest(w, fmt.Errorf("authentication ceremony has not been started or has expired"))
 		return
 	}
+	app.sessionManager.Remove(r.Context(), authenticationSessionDataKey)
 
 	parsedResponse, err := protocol.ParseCredentialRequestResponseBody(r.Body)
 	if err != nil {
-		response.InternalServerError(w, err)
+		response.BadRequest(w, fmt.Errorf("invalid authentication response"))
 		return
 	}
 
-	credential, err := app.webAuthn.ValidateDiscoverableLogin(app.createDiscoverableUserHandler(r.Context(), tx), sessionData, parsedResponse)
+	var lookupErr error
+	lookupUser := func(rawID, userHandle []byte) (webauthn.User, error) {
+		var credential *models.Credential
+		credential, lookupErr = models.Credentials(
+			models.CredentialWhere.CredID.EQ(rawID),
+			models.CredentialWhere.WebauthnUserID.EQ(userHandle),
+		).One(r.Context(), tx)
+		if lookupErr != nil {
+			return nil, lookupErr
+		}
+		return toWebAuthnUserWithCredentials(credential), nil
+	}
+
+	user, credential, err := app.webAuthn.ValidatePasskeyLogin(lookupUser, sessionData, parsedResponse)
 	if err != nil {
-		response.InternalServerError(w, err)
+		if lookupErr != nil && !errors.Is(lookupErr, sql.ErrNoRows) {
+			response.InternalServerError(w, lookupErr)
+		} else {
+			response.Unauthorized(w)
+		}
+		return
+	}
+	validatedUser, ok := user.(*WebAuthnUser)
+	if !ok {
+		response.InternalServerError(w, fmt.Errorf("unexpected WebAuthn user type %T", user))
 		return
 	}
 
 	if credential.Authenticator.CloneWarning {
-		response.InternalServerError(w, fmt.Errorf("authenticator may be cloned"))
+		response.Unauthorized(w)
 		return
 	}
 
@@ -76,23 +97,10 @@ func (app *application) authenticationFinish(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	app.sessionManager.Remove(r.Context(), authenticationSessionDataKey)
-
-	user, err := models.Credentials(models.CredentialWhere.CredID.EQ(credential.ID), qm.Select(models.CredentialColumns.UserID)).One(r.Context(), tx)
-	if err != nil {
+	if err := app.sessionManager.RenewToken(r.Context()); err != nil {
 		response.InternalServerError(w, err)
 		return
 	}
-	app.sessionManager.Put(r.Context(), "userID", user.UserID)
+	app.sessionManager.Put(r.Context(), authenticatedUserIDKey, validatedUser.userID)
 	w.WriteHeader(http.StatusOK)
-}
-
-func (app *application) createDiscoverableUserHandler(ctx context.Context, tx *sql.Tx) webauthn.DiscoverableUserHandler {
-	return func(rawID, userHandle []byte) (webauthn.User, error) {
-		credential, err := models.Credentials(models.CredentialWhere.WebauthnUserID.EQ(userHandle)).One(ctx, tx)
-		if err != nil {
-			return nil, err
-		}
-		return toWebAuthnUserWithCredentials(credential)
-	}
 }

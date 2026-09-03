@@ -7,6 +7,7 @@ import {
   browserSupportsWebAuthnAutofill,
   PublicKeyCredentialRequestOptionsJSON,
   startAuthentication,
+  WebAuthnAbortService,
 } from '@simplewebauthn/browser';
 import { MessagesService } from '../messages.service';
 import { environment } from '../../environments/environment';
@@ -30,6 +31,7 @@ export class AuthenticationPage implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.#active = false;
+    WebAuthnAbortService.cancelCeremony();
   }
 
   async login(): Promise<void> {
