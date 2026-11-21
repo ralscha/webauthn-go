@@ -12,8 +12,8 @@ github.com/aarondl/sqlboiler/v4 v4.19.7 h1:v18zMSFRCDg3/ntO+ltVXhN44eVyP/zL2Xxxz
 github.com/aarondl/sqlboiler/v4 v4.19.7/go.mod h1:KDxTT6q8/H8Gza+VQ5J45GR8SYiN0BfF2sOFg+eMRws=
 github.com/aarondl/strmangle v0.0.9 h1:VCT+O1FqRSE9DTK3qR0zRHtB384fdRzuyKfx2ux2xms=
 github.com/aarondl/strmangle v0.0.9/go.mod h1:ezNIwvvnuVGuKedP5qt2T+wvzPD8yuOoMzamifXNMlk=
-github.com/alexedwards/scs/postgresstore v0.0.0-20251002162104-209de6e426de h1:LDrMkjj4OCCQsq9SvIPQV1l3leMxqXZTCTxDFwMrqTE=
-github.com/alexedwards/scs/postgresstore v0.0.0-20251002162104-209de6e426de/go.mod h1:TDDdV/xnjj+/4zBQ9a2k+i2AbuAdY7SQjPUh5zoTZ3M=
+github.com/alexedwards/scs/postgresstore v0.0.0-20261119174900-ed2e92329119 h1:1H9eC08sBUkdZwEl7eZp8P+5Gx2ZqUAcBE3I/2pcR4o=
+github.com/alexedwards/scs/postgresstore v0.0.0-20261119174900-ed2e92329119/go.mod h1:TDDdV/xnjj+/4zBQ9a2k+i2AbuAdY7SQjPUh5zoTZ3M=
 github.com/alexedwards/scs/v2 v2.9.0 h1:xa05mVpwTBm1iLeTMNFfAWpKUm4fXAW7CeAViqBVS90=
 github.com/alexedwards/scs/v2 v2.9.0/go.mod h1:ToaROZxyKukJKT/xLcVQAChi5k6+Pn1Gvmdl7h3RRj8=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
@@ -42,8 +42,8 @@ github.com/go-viper/mapstructure/v2 v2.5.0 h1:vM5IJoUAy3d7zRSVtIwQgBj7BiWtMPfmPE
 github.com/go-viper/mapstructure/v2 v2.5.0/go.mod h1:oJDH3BJKyqBA2TXFhDsKDGDTlndYOZ6rGS0BRZIxGhM=
 github.com/go-webauthn/webauthn v0.18.2 h1:0BeftmEHU7i3Dv0VFwBtidy/ba37Vcdjvqst9EYu8Sk=
 github.com/go-webauthn/webauthn v0.18.2/go.mod h1:hEXaOuLxvZ3zG9miZe3ehlyeVso9AtklXG+kTn36k+A=
-github.com/go-webauthn/x v0.3.1 h1:1ff37z3XfmTTomkhlURgGizLIDyOvPgTt2t9nlzKLRo=
-github.com/go-webauthn/x v0.3.1/go.mod h1:ZInxAynYXfBPvvm5gzKZ7geBlL23K71xASMgohHl/Rg=
+github.com/go-webauthn/x v0.4.1 h1:zOZMFgQIHg3gHOHiGCEkFhc9ZYbDnMw+d4XXq+rpoIA=
+github.com/go-webauthn/x v0.4.1/go.mod h1:8MN6mqQWQzNSwJdw8j7nvkrGl2rACldz91oqKsImQQ8=
 github.com/gobuffalo/validate v2.0.4+incompatible h1:ZTxozrIw8qQ5nfhShmc4izjYPTsPhfdXTdhXOd5OS9o=
 github.com/gobuffalo/validate v2.0.4+incompatible/go.mod h1:N+EtDe0J8252BgfzQUChBgfd6L93m9weay53EWFVsMM=
 github.com/gofrs/uuid v3.2.0+incompatible/go.mod h1:b2aQJv3Z4Fp6yNu3cdSllBxTCLRxnplIgP/c0N/04lM=

@@ -7,7 +7,7 @@ require (
 	github.com/aarondl/null/v8 v8.1.3
 	github.com/aarondl/sqlboiler/v4 v4.19.7
 	github.com/aarondl/strmangle v0.0.9
-	github.com/alexedwards/scs/postgresstore v0.0.0-20251002162104-209de6e426de
+	github.com/alexedwards/scs/postgresstore v0.0.0-20261119174900-ed2e92329119
 	github.com/alexedwards/scs/v2 v2.9.0
 	github.com/friendsofgo/errors v0.9.2
 	github.com/go-chi/chi/v5 v5.5.0
@@ -26,7 +26,7 @@ require (
 	github.com/fsnotify/fsnotify v1.10.1 // indirect
 	github.com/fxamacker/cbor/v2 v2.10.0 // indirect
 	github.com/go-viper/mapstructure/v2 v2.5.0 // indirect
-	github.com/go-webauthn/x v0.3.1 // indirect
+	github.com/go-webauthn/x v0.4.1 // indirect
 	github.com/gofrs/uuid v4.4.0+incompatible // indirect
 	github.com/golang-jwt/jwt/v5 v5.3.1 // indirect
 	github.com/google/go-tpm v0.9.8 // indirect
