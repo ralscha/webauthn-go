@@ -42,7 +42,7 @@ require (
 	github.com/philhofer/fwd v1.2.1 // indirect
 	github.com/sagikazarmark/locafero v0.12.0 // indirect
 	github.com/serenize/snaker v0.0.0-20201027110005-a7ad2135616e // indirect
-	github.com/sethvargo/go-retry v0.5.0 // indirect
+	github.com/sethvargo/go-retry v0.6.0 // indirect
 	github.com/spf13/afero v1.15.0 // indirect
 	github.com/spf13/cast v1.10.0 // indirect
 	github.com/spf13/pflag v1.1.0 // indirect
@@ -59,3 +59,6 @@ require (
 	golang.org/x/text v0.44.0 // indirect
 	golang.org/x/xerrors v0.0.0-20240903120638-7835f813f4da // indirect
 )
+
+// Goose v3.30.1 needs BackoffFunc, removed in go-retry v0.7.0.
+exclude github.com/sethvargo/go-retry v0.7.0
