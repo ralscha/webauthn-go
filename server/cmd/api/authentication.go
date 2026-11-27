@@ -102,5 +102,6 @@ func (app *application) authenticationFinish(w http.ResponseWriter, r *http.Requ
 		return
 	}
 	app.sessionManager.Put(r.Context(), authenticatedUserIDKey, validatedUser.userID)
+	app.sessionManager.Put(r.Context(), currentPasskeyKey, credential.ID)
 	w.WriteHeader(http.StatusOK)
 }

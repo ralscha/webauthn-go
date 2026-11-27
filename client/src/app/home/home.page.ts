@@ -1,3 +1,4 @@
+import { DatePipe } from '@angular/common';
 import { httpResource } from '@angular/common/http';
 import { Component, inject } from '@angular/core';
 import { Router } from '@angular/router';
@@ -7,6 +8,7 @@ import { SecretOutput } from '../api/types';
 
 @Component({
   selector: 'app-home',
+  imports: [DatePipe],
   templateUrl: './home.page.html',
 })
 export class HomePage {

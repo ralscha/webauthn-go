@@ -6,6 +6,7 @@ import (
 )
 
 const authenticatedUserIDKey = "userID"
+const currentPasskeyKey = "signedInPasskey"
 
 func (app *application) authenticateHandler(w http.ResponseWriter, r *http.Request) {
 	userID := app.sessionManager.GetInt(r.Context(), authenticatedUserIDKey)

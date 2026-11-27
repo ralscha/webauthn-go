@@ -11,6 +11,16 @@
   <div class="card card-border bg-base-100 shadow-sm">
     <div class="card-body gap-4">
       <h2 class="card-title">Logged In</h2>
+      @if (secret.value(); as account) {
+        <h3 class="font-semibold">Registered passkeys</h3>
+        <ul>
+          @for (key of account.passkeys; track $index) {
+            <li>{{ key.label }} @if (key.current) { <strong>(current sign-in)</strong> }
+              · Last used {{ key.lastUsed ? (key.lastUsed | date:'medium') : 'unknown' }}
+            </li>
+          }
+        </ul>
+      }
       <div>
         <p class="text-sm opacity-70">Response from protected endpoint:</p>
         <p class="mt-2 rounded bg-base-200 p-3 font-mono text-sm">

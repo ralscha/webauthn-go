@@ -15,7 +15,7 @@ require (
 	github.com/go-webauthn/webauthn v0.18.2
 	github.com/gobuffalo/validate v2.0.4+incompatible
 	github.com/jackc/pgx/v5 v5.13.0
-	github.com/pressly/goose/v3 v3.30.1
+	github.com/pressly/goose/v3 v3.30.2
 	github.com/spf13/viper v1.21.0
 	github.com/tkrajina/typescriptify-golang-structs v0.2.0
 )
@@ -42,7 +42,6 @@ require (
 	github.com/philhofer/fwd v1.2.1 // indirect
 	github.com/sagikazarmark/locafero v0.12.0 // indirect
 	github.com/serenize/snaker v0.0.0-20201027110005-a7ad2135616e // indirect
-	github.com/sethvargo/go-retry v0.6.0 // indirect
 	github.com/spf13/afero v1.15.0 // indirect
 	github.com/spf13/cast v1.10.0 // indirect
 	github.com/spf13/pflag v1.1.0 // indirect
